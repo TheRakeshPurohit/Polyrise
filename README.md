@@ -1,7 +1,7 @@
 # Polyrise
 Free Mobile Website Builder! Create awesome responsive websites. Easy and fast - No coding! Free for commercial use.
 
-![](https://raw.githubusercontent.com/michaelsboost/Polyrise/gh-pages/img/header.png)
+![](https://raw.githubusercontent.com/michaelsboost/Polyrise/gh-pages/imgs/header.png)
 
 ### Version
 1.0.0
