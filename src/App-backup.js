@@ -6435,9 +6435,58 @@ async function updateMediaSource(event, type, element) {
     console.error('Error reading file:', error);
   }
 }
-function updateSvgMedia(id, type) {
-  let title = "Are you sure you want to replace the svg?";
-  target = findLayerById(id, project.html).layer;
+async function checkApiConnection() {
+  try {
+    const response = await fetch('https://api.iconify.design/collections');
+    if (response.ok) {
+      return true;
+    }
+  } catch (error) {
+    console.error("API connection failed:", error);
+  }
+  return false;
+}
+async function fetchIconifySvg(icon) {
+  const hosts = [
+    `https://api.iconify.design/${icon}.svg`,
+    `https://api.simplesvg.com/${icon}.svg`,
+    `https://api.unisvg.com/${icon}.svg`
+  ];
+
+  for (const url of hosts) {
+    try {
+      const response = await fetch(url, { timeout: 750 });
+      if (response.ok) {
+        return await response.text();
+      } else if (response.status === 404) {
+        console.warn(`Icon not found at ${url}`);
+        continue;
+      }
+    } catch (error) {
+      console.warn(`Failed to fetch from ${url}:`, error);
+    }
+  }
+
+  throw new Error("Icon not found or all hosts are unreachable.");
+}
+async function searchIcons(query) {
+  const searchUrl = `https://api.iconify.design/search?query=${encodeURIComponent(query)}`;
+  try {
+    const response = await fetch(searchUrl);
+    if (response.ok) {
+      const data = await response.json();
+      return data.icons || [];
+    } else {
+      console.error("Failed to fetch icon search results.");
+    }
+  } catch (error) {
+    console.error("Error during icon search:", error);
+  }
+  return [];
+}
+async function updateSvgMedia(id, type) {
+  let title = "Replace the SVG";
+  const target = findLayerById(id, project.html).layer;
   let display = "";
   const elm = document.createElement("template");
   elm.innerHTML = json2html(target);
@@ -6445,8 +6494,8 @@ function updateSvgMedia(id, type) {
   if (element) {
     display = `<label for="ixkq65jma">${element.outerHTML}</label>`;
   }
-
   elm.remove();
+
   let modalContent = `<style>
       #vl61t8366 svg {
         cursor: pointer;
@@ -6455,29 +6504,45 @@ function updateSvgMedia(id, type) {
       }
     </style>
     <div id="vl61t8366" class="p-4 text-center grid grid-cols-1 gap-4 place-items-center">
-      <input id="ixkq65jma" class="hidden" type="file" name="image" onchange="updateMediaSource(event, '${type}', document.getElementById('p8gnvn4o7'))">
-      ${display}
+      <figure>
+        ${display}
+        <figcaption>
+          <span id="modal-description">Checking connection...</span>
+        </figcaption>
+      </figure>
+      <input id="ixkq65jma" type="file" name="image" accept=".svg" class="hidden" onchange="updateMediaSource(event, '${type}', document.getElementById('vl61t8366'))">
+      <input type="search" id="iconSearch" placeholder="Search for an icon" class="w-full p-2 border rounded-full mt-4 hidden" oninput="handleIconSearch(event)">
+      <div id="iconResults" class="grid grid-cols-4 gap-4 mt-4 w-full hidden"></div>
     </div>`;
-  
+
   Modal.render({
     title: title,
     content: modalContent,
+    onLoad: async function() {
+      const apiConnection = await checkApiConnection();
+      const descriptionElement = document.getElementById('modal-description');
+      const searchElement = document.getElementById('iconSearch');
+      const iconResults = document.getElementById('iconResults');
+
+      if (navigator.onLine && apiConnection) {
+        descriptionElement.innerHTML = `<span>Api courtesy of 
+          <a href="https://iconify.design/" target="_blank">Iconify</a>.
+        </span>`;
+        searchElement.classList.remove('hidden');
+        searchElement.focus();
+        iconResults.classList.remove('hidden');
+      } else {
+        descriptionElement.textContent = 'Upload your SVG:';
+      }
+    },
     onConfirm: function() {
       data.selectedLayerIds.forEach(id => {
         const { layer } = findLayerById(id, project.html);
-        if (layer) {
-          if (layer.tag === "img") {
+        if (layer && layer.tag === "svg") {
+          const selectedSvg = document.getElementById('vl61t8366').querySelector('svg');
+          if (selectedSvg) {
+            let obj = html2json(selectedSvg.outerHTML)[0];
             saveState();
-            layer.props[`src`] = document.getElementById('p8gnvn4o7').src;
-            saveState();
-            renderPreview();
-          }
-          if (layer.tag === "svg") {
-            source = document.getElementById('vl61t8366').querySelector('svg').outerHTML;
-            let obj = html2json(source)[0];
-    
-            saveState();
-            // Update properties directly instead of reassigning the whole object
             Object.keys(obj).forEach(key => {
               if (key === "id") return;
               layer[key] = obj[key];
@@ -6485,13 +6550,51 @@ function updateSvgMedia(id, type) {
             findLayerById(id, project.html).layer.state.selected = null;
             findLayerById(id, project.html).layer.state.selected = true;
             saveState();
-            
             renderPreview();
           }
         }
       });
     }
   });
+}
+async function handleIconSearch(event) {
+  const query = event.target.value;
+  const iconResultsElement = document.getElementById('iconResults');
+  if (query.length > 2) {
+    const icons = await searchIcons(query);
+    
+    iconResultsElement.innerHTML = ''; // Clear previous results
+
+    for (const icon of icons) {
+      try {
+        const iconUrl = `https://api.iconify.design/${icon}.svg`;
+        getFile(iconUrl, (error, svgContent) => {
+          if (error) {
+            console.error("Failed to fetch SVG:", error);
+          } else {
+            const iconDiv = document.createElement('div');
+            iconDiv.innerHTML = svgContent;
+            iconDiv.onclick = () => {
+              const selectedSvgElement = document.querySelector("#vl61t8366 label svg");
+              if (selectedSvgElement) {
+                selectedSvgElement.outerHTML = svgContent; // Replace the outerHTML with the selected SVG
+                iconDiv.closest('article').scrollTop = 0;
+              }
+            };
+            iconResultsElement.appendChild(iconDiv);
+          }
+        });
+      } catch (error) {
+        console.warn(`Failed to fetch SVG for icon: ${icon}`, error);
+      }
+    }
+  } else {
+    const iconResultsElement = document.getElementById('iconResults');
+    iconResultsElement.innerHTML = '';
+  }
+}
+function selectIcon(svgContent) {
+  iconContainer.innerHTML = svgContent;
 }
 function copyToClipboard(text) {
   navigator.clipboard.writeText(text).then(function() {
@@ -7069,16 +7172,17 @@ async function downloadJSON() {
     removeScript("libraries/jszip/FileSaver.min.js");
   }
 }
-async function getFile(url) {
+async function getFile(url, callback) {
   try {
     const response = await fetch(url);
     if (!response.ok) throw new Error("Network response was not ok");
-    return await response.text();
+    const fileContent = await response.text();
+    callback(null, fileContent); // Call the callback with the file content
   } catch (error) {
     console.warn("Request error:", error);
-    throw error; // Re-throw to handle in caller
+    callback(error); // Call the callback with the error
   }
-};
+}
 function minifyCSS(source) {
   // Convert the source to a string if it isn't one
   source = String(source);
@@ -7881,7 +7985,12 @@ window.emptyChildren = emptyChildren;
 window.updateElement = updateElement;
 window.updateImageMedia = updateImageMedia;
 window.updateAudioMedia = updateAudioMedia;
+window.checkApiConnection = checkApiConnection;
+window.fetchIconifySvg = fetchIconifySvg;
+window.searchIcons = searchIcons;
 window.updateSvgMedia = updateSvgMedia;
+window.handleIconSearch = handleIconSearch;
+window.selectIcon = selectIcon;
 window.updateMediaSource = updateMediaSource;
 window.addAttribute = addAttribute;
 window.copyToClipboard = copyToClipboard;
