@@ -7453,8 +7453,7 @@ ${app.summary} ${app.description}
           img.src = base64Logo;
           img.onload = function() {
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            const base64Image = canvas.toDataURL('image/png').replace(/^data:image\/(png|jpg);base64,/, '');
-            zip.folder('imgs').file(`logo-${size}.png`, base64Image, { base64: true });
+            imageResources.push({ url: canvas.toDataURL('image/png'), fileName: `logo-${size}.png` });
           };
 
           // Clean up canvas element
@@ -7501,19 +7500,19 @@ const { CacheFirst } = workbox.strategies;
 const cacheName = '${project.name.split(' ').join('')}-cache';
 
 workbox.routing.registerRoute(
-({ request }) => request.destination === 'script' ||
-           request.destination === 'style' ||
-           request.destination === 'document' ||
-           request.destination === 'image' ||
-           request.destination === 'font' ||
-           request.destination === 'audio' ||
-           request.destination === 'video',
-new CacheFirst({
-cacheName: cacheName,
-plugins: [
-// Any additional plugins can be added here
-],
-})
+  ({ request }) => request.destination === 'script' ||
+            request.destination === 'style' ||
+            request.destination === 'document' ||
+            request.destination === 'image' ||
+            request.destination === 'font' ||
+            request.destination === 'audio' ||
+            request.destination === 'video',
+    new CacheFirst({
+    cacheName: cacheName,
+    plugins: [
+      // Any additional plugins can be added here
+    ],
+  })
 );`
   zip.file("sw.js", swjs);
     }
@@ -7620,7 +7619,7 @@ ${scriptTags ? scriptTags : ''}
 
       </body>
     </html>`;
-        zip.file('test.html', testHtmlContent);
+    zip.file('test.html', testHtmlContent);
     const indexHtmlContentCompiled = `<!DOCTYPE html>
 <html lang="en" data-theme="${project.dark ? 'dark' : 'light'}">
   <head>
