@@ -3804,6 +3804,7 @@ function deleteStyleTarget(target) {
         delete project.css.styles[data.stylesTarget];
         data.stylesTarget = null;
         saveState();
+        renderPreview();
       }
     }
   });
