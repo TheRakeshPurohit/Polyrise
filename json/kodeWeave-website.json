@@ -16,6 +16,7 @@
     "animations": {},
     "breakpoints": {}
   },
+  "components": [],
   "html": [
     {
       "tag": "div",
