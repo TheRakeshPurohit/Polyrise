@@ -40,7 +40,7 @@ let app = {
     href: 'https://michaelsboost.com/',
     src: 'imgs/author.jpg'
   },
-  version: '1.0.0',
+  version: '1.0.1',
   url: 'https://github.com/michaelsboost/Polyrise/',
   license: 'https://github.com/michaelsboost/Polyrise/blob/gh-pages/LICENSE'
 }
@@ -59,6 +59,7 @@ let p = {
     "animations": {},
     "breakpoints": {}
   },
+  components: [],
   html: [],
   logo: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhLS0gQ3JlYXRlZCB3aXRoIElua3NjYXBlIChodHRwOi8vd3d3Lmlua3NjYXBlLm9yZy8pIC0tPgoKPHN2ZwogICB3aWR0aD0iNTEyIgogICBoZWlnaHQ9IjUxMiIKICAgdmlld0JveD0iMCAwIDEzNS40NjY2NiAxMzUuNDY2NjciCiAgIHZlcnNpb249IjEuMSIKICAgaWQ9InN2ZzEiCiAgIHhtbDpzcGFjZT0icHJlc2VydmUiCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM6c3ZnPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnMKICAgICBpZD0iZGVmczEiIC8+PGcKICAgICBpZD0iZzI0Ij48cGF0aAogICAgICAgaWQ9InBhdGgyMiIKICAgICAgIHN0eWxlPSJkaXNwbGF5OmlubGluZTtmaWxsOiMxMzNhZDQ7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlLXdpZHRoOjk2LjE3NDtzdHJva2UtbGluZWNhcDpyb3VuZDtzdHJva2UtbGluZWpvaW46cm91bmQiCiAgICAgICBkPSJNIDkuNTgyODc3NSw2Ny43MzMzMzIgViAxMzUuMjAwNTMgTCAyNS4zODc1OTcsMTI2LjAzMTA3IFYgMTA2Ljk2MDQgNjcuNzMzMzMyIFogbSA4NS45Njg5MTE1LDAgLTU3Ljc2OTA4MywzMi4yOTcyNTggdiAxOC44MTA3MyBMIDEyNS44ODIyNCw2Ny43MzMzMzIgWiIgLz48cGF0aAogICAgICAgc3R5bGU9ImRpc3BsYXk6aW5saW5lO2ZpbGw6IzA0YTJmZjtmaWxsLW9wYWNpdHk6MTtzdHJva2Utd2lkdGg6MTQ7c3Ryb2tlLWxpbmVjYXA6cm91bmQ7c3Ryb2tlLWxpbmVqb2luOnJvdW5kIgogICAgICAgaWQ9InBhdGgyMyIKICAgICAgIGQ9Im0gNDkuNTY4NTI3LDM1LjgxOTU1MyAtMTYuOTcwNDc4LDkuNzk3OTEgMCwtMTkuNTk1ODIgeiIKICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDIuMjE3MjY1MiwwLDAsMi4xNDcwMjkzLC0zNC40OTUyNjksLTkuMjYyMTYyKSIgLz48cGF0aAogICAgICAgaWQ9InBhdGgyNCIKICAgICAgIHN0eWxlPSJkaXNwbGF5OmlubGluZTtmaWxsOiM4NjAwZWY7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlLXdpZHRoOjk2LjE3NDtzdHJva2UtbGluZWNhcDpyb3VuZDtzdHJva2UtbGluZWpvaW46cm91bmQiCiAgICAgICBkPSJNIDkuNTgyODc3NSwwLjI2NjEzMzYyIFYgNjcuNzMzMzMyIEggMjUuMzg3NTk3IFYgNDIuODU2ODE1IDI4LjMyNjk1MyBsIDcwLjMyNTkzOSwzOS4zMTU5NDYgLTAuMTYxNzQ3LDAuMDkwNDMgaCAzMC4zMzA0NTEgbCAwLjAwMiwtMC4wMDEgeiIgLz48L2c+PC9zdmc+Cg==",
   lang: "en",
@@ -81,6 +82,7 @@ let d = {
   clipboard: null,
   history: [],
   historyIndex: -1,
+  componentsVisible: true,
   canvasCollapsed: null,
   rootVarsCollapsed: null,
   stylesCollapsed: null,
@@ -94,7 +96,6 @@ let d = {
   stylesTarget: null,
   animationTarget: null,
   animationKeyframe: null,
-  deleteTargetInModal: null,
   defaultValues: {
     'opacity': '1',
     'z-index': '1',
@@ -1877,7 +1878,7 @@ function Inspector() {
         <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize">
           ${Object.keys(project.css.rootVariables).map(key => `
             <button 
-              class="${buttonItemClass}" 
+              class="${buttonItemClass.split('capitalize').join('')}" 
               style="color: unset;" 
               onclick="renameRootVariable('${key}')">
               ${key}
@@ -1946,7 +1947,7 @@ function Inspector() {
       styles += `<button 
         aria-label="set style target to ${key}"
         name="set style target to ${key}"
-        class="${buttonClass} p-2 border ${project.dark ? "border-gray-700" : "border-gray-300"}" ${activeStyle ? '' : 'style="color: unset;"'}
+        class="${buttonClass.split('capitalize').join('')} p-2 border ${project.dark ? "border-gray-700" : "border-gray-300"}" ${activeStyle ? '' : 'style="color: unset;"'}
         onclick="
           data.stylesTarget = this.textContent.toString();
           if (!data.cmdKey || !data.shiftKey) {
@@ -2031,7 +2032,6 @@ function Inspector() {
             style="color: unset;" 
             onclick="
               styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
-              data.deleteTargetInModal = ${detect ? `'${detect}'` : 'null'};
           ">
             ${prop}
           </button>
@@ -2049,7 +2049,6 @@ function Inspector() {
             style="color: unset;" 
             onclick="
               styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
-              data.deleteTargetInModal = ${detect ? `'${detect}'` : 'null'};
           ">
             ${prop}
           </button>
@@ -2094,7 +2093,6 @@ function Inspector() {
             style="color: unset;" 
             onclick="
               styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
-              data.deleteTargetInModal = ${detect ? `'${detect}'` : 'null'};
           ">
             ${prop}
           </button>
@@ -2209,12 +2207,12 @@ function Inspector() {
             const index = data.pseudosSelectorIndex;
             if (data.pseudosSelector) {
               if (obj[key].pseudos[index].styles) {
-                styles += processStyles(obj[key].pseudos[index].styles, `project.css.breakpoints['${key}'].pseudos['${index}'].styles`, key, 'breakpoints');
+                styles += processStyles(obj[key].pseudos[index].styles, `project.css.breakpoints['${data.breakpointKey}px']['${key}'].pseudos['${index}'].styles`, key, 'breakpoints');
               }
             }
           } else {
             if (obj[key][data.stylesPropTarget]) {
-              styles += processStyles(obj[key][data.stylesPropTarget], `project.css.breakpoints['${key}']['${data.stylesPropTarget}']`, key, 'breakpoints');
+              styles += processStyles(obj[key][data.stylesPropTarget], `project.css.breakpoints['${data.breakpointKey}px']['${key}']['${data.stylesPropTarget}']`, key, 'breakpoints');
             }
           }
         }
@@ -2258,15 +2256,15 @@ function Inspector() {
         Object.keys(project.css.styles[data.stylesTarget].pseudos).forEach(index => {
           selector = project.css.styles[data.stylesTarget].pseudos[index].selector;
           if (data.pseudosSelector === selector) {
-            data.pseudosSelectorIndex = index;
             buttonClass = buttonItemClass.split('bg-transparent border-0').join('');
             activeStyle = true;
+            data.pseudosSelectorIndex = index;
           } else {
-            buttonClass = 'bg-transparent border-0 text-[.6rem] p-0 m-0 h-full capitalize text-left';
+            buttonClass = 'bg-transparent text-[.6rem] p-0 m-0 h-full text-left';
             activeStyle = null;
           }
           styles += `<button 
-            class="${buttonClass} p-2 border ${project.dark ? "border-gray-700" : "border-gray-300"}" ${activeStyle ? '' : 'style="color: unset;"'}
+            class="${buttonClass.split('capitalize').join('')} p-2 border ${project.dark ? "border-gray-700" : "border-gray-300"}" ${activeStyle ? '' : 'style="color: unset;"'}
             onclick="data.pseudosSelector = this.textContent;">${selector}</button>`;
         });
       }
@@ -2277,14 +2275,46 @@ function Inspector() {
       <button class="${buttonItemClass}" style="color: unset;" onclick="data.stylePseudosCollapsed = !data.stylePseudosCollapsed;">
         pseudos
       </button>
-      <button class="${buttonAddItemClass}" style="color: unset;">
+      <button class="${buttonAddItemClass}" style="color: unset;" onclick="addPseudo('${data.stylesTarget}')">
         <svg class="w-3" viewBox="0 0 576 512" style="color: unset;">
           <path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path>
         </svg>
       </button>
     </div>
-    <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize ${data.stylePseudosCollapsed ? 'hidden' : ''}">
-      ${styles}
+    <div class="grid grid-cols-1 gap-1 items-center py-2 capitalize ${data.stylePseudosCollapsed ? 'hidden' : ''}">
+      ${data.stylesTarget ? `<div class="grid grid-cols-2 gap-1 items-center py-2 capitalize">
+        ${styles}
+      </div>` : ''}
+      ${data.pseudosSelector && data.stylesTarget ? `
+        <div class="grid grid-cols-2 gap-1 items-center pb-2 capitalize">
+          <button 
+            aria-label="Rename pseudo for ${data.breakpointKey}px"
+            name="rename pseudo for ${data.breakpointKey}px"
+            class="${RenameOrDeleteButtonClass} p-2 border ${project.dark ? "text-green-600 border-green-800" : "text-green-700 border-green-400"}"
+            onclick="renamePseudo('${data.pseudosSelector}');">
+            Rename
+          </button>
+          <button 
+            aria-label="Delete pseudo for ${data.breakpointKey}px"
+            name="delete pseudo for ${data.breakpointKey}px"
+            class="${RenameOrDeleteButtonClass} p-2 border ${project.dark ? "text-red-600 border-red-800" : "text-red-600 border-red-400"}"
+            onclick="deletePseudo();">
+            Delete
+          </button>
+        </div>
+      ` : ''}
+      ${data.pseudosSelector && data.stylesTarget ? `
+        <div class="grid grid-cols-1 gap-1 items-center capitalize">
+          <button 
+            aria-label="De-select the ${data.stylesTarget} style"
+            name="de-select the ${data.stylesTarget} style"
+            class="${RenameOrDeleteButtonClass} p-2 border ${project.dark ? "border-gray-700" : "border-gray-300"}"
+            style="color: unset;"
+            onclick="data.pseudosSelector = null;">
+            De-select
+          </button>
+        </div>
+      ` : ''}
     </div>
   </div>`;
   };
@@ -2387,16 +2417,23 @@ function Inspector() {
     // Generate keyframes buttons
     if (data.animationTarget && project.css.animations && project.css.animations[data.animationTarget].keyframes) {
       Object.keys(project.css.animations[data.animationTarget].keyframes).forEach(key => {
-        const isActive = (data.animationKeyframe === key);
-        buttonClass = isActive
-          ? buttonItemClass.split('bg-transparent border-0').join('')
-          : 'bg-transparent text-[.6rem] p-0 m-0 h-full capitalize text-center';
+        let buttonClass = '';
+        if (data.animationKeyframe === key) {
+          buttonClass = buttonItemClass.split('bg-transparent border-0').join('');
+          isActive = true;
+        } else {
+          buttonClass = 'bg-transparent text-[.6rem] p-0 m-0 h-full capitalize text-center';
+          isActive = null;
+        }
         
         keyframes += `<button 
           aria-label="target keyframe styles for ${key}"
           name="target keyframe styles for ${key}"
           class="${buttonClass.split('text-left').join('text-center')} p-2 border ${project.dark ? "border-gray-700" : "border-gray-300"}" ${isActive ? '' : 'style="color: unset;"'}
-          onclick="data.animationKeyframe = '${key}';">${key}</button>`;
+          onclick="
+            data.animationKeyframe = null;
+            data.animationKeyframe = '${key}';
+          ">${key}</button>`;
       });
     }
 
@@ -2495,12 +2532,20 @@ function Inspector() {
       });
     }
 
+    let stylesObj = 'project.css.styles[data.stylesTarget][data.stylesPropTarget]';
+    if (data.stylesPropTarget === "pseudos") {
+      stylesObj = 'project.css.styles[data.stylesTarget][data.stylesPropTarget][data.pseudosSelectorIndex].styles';
+    }
+
     return `<div class="border-0 border-b border-solid pb-2 mb-4 ${project.dark ? "border-gray-800" : "border-gray-200"}">
       <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize">
         <button class="${buttonItemClass}" style="color: unset;" onclick="data.stylePropsCollapsed = !data.stylePropsCollapsed;">
           style properties
         </button>
-        <button class="${buttonAddItemClass}" style="color: unset;" onclick="addStylePropModal('${styleKey}', project.css.styles[data.stylesTarget][data.stylesPropTarget]);">
+        <button 
+          class="${buttonAddItemClass}" 
+          style="color: unset;" 
+          onclick="addStylePropModal('${styleKey}', ${stylesObj});">
           <svg class="w-3" viewBox="0 0 576 512" style="color: unset;">
             <path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path>
           </svg>
@@ -2534,7 +2579,7 @@ function Inspector() {
         // style reference
         attributeTag += `
           <span class="${buttonItemClass}">Style Ref</span>
-          <input class="${inputClass}" style="${inputStyle}" type="text" value="${layer.style ? layer.style : ''}" onfocus="saveState()" onblur="saveState()"/>
+          <input class="${inputClass}" style="${inputStyle}" type="text" value="${layer.style ? layer.style : ''}" onfocus="saveState()" onblur="updateElement('style', null, this.value); saveState();"/>
         `;
   
         // Determine block type and render the appropriate options
@@ -2925,19 +2970,40 @@ const Modal = {
   }
 }
 function Blocks() {
-  const btnClass = `bg-transparent p-4 text-xs text-center rounded-md border border-solid cursor-pointer capitalize`;
+  const btnClass = `bg-transparent p-4 text-xs cursor-pointer capitalize`;
 
-  let blockItem = '';
+  let blockItem = '', componentItem = '';
 
   data.blocks.items.forEach((block, index) => {
     blockItem += `
       <button 
-        class="${btnClass} ${project.dark ? "border-gray-800" : "border-gray-200"}"
+        class="${btnClass} border border-solid text-center rounded-md ${project.dark ? "border-gray-800" : "border-gray-200"}"
         style="color: unset;"
         onclick="addBlock(data.blocks.items[${index}].code)"
       >
         ${block.type}
       </button>`;
+  });
+
+  project.components.forEach((component, index) => {
+    componentItem += `
+      <div class="flex justify-between w-full h-full border border-solid rounded-md ${project.dark ? "border-gray-800" : "border-gray-200"}">
+        <button 
+          class="bg-transparent border-0 text-xs capitalize m-0 py-0 px-2"
+          style="color: unset;"
+          onclick="addBlock(project.components[${index}].code)"
+        >
+          ${component.name}
+        </button>
+
+        <button 
+          class="bg-transparent border-0 text-xs capitalize m-0 py-0 px-2"
+          style="color: unset;"
+          onclick="deleteComponent('${index}')"
+        >
+          ${icons.trash}
+        </button>
+      </div>`;
   });
 
   let html = `<article class="select-none font-thin">
@@ -2958,6 +3024,30 @@ function Blocks() {
               onclick="customCode()"
             >
               Custom
+            </button>
+          </code>
+        </details>
+      </section>
+    </article>
+    
+    <article class="select-none font-thin">
+        <section class="p-0 m-0">
+          <details class="flex items-center mb-0" ${data.componentsVisible ? 'open' : ''} ontoggle="
+            const detailsElement = this;
+            data.blocks.visible = detailsElement.hasAttribute('open');
+          ">
+          <summary>
+            Components
+          </summary>
+          <code class="grid grid-cols-2 gap-2 mb-0 bg-transparent">
+            ${componentItem}
+
+            <button 
+              class="${btnClass} ${project.dark ? "border-gray-800" : "border-gray-200"}"
+              style="color: unset;"
+              onclick="addComponent()"
+            >
+              ${icons.plus}
             </button>
           </code>
         </details>
@@ -3197,6 +3287,7 @@ const App = {
     diffNodes(currentDoc, newDoc);
   }
 }
+window.App = App;
 function emptyStorage() {
   // Clear local storage
   localStorage.removeItem('Polyrise');
@@ -3416,7 +3507,7 @@ function renameRootVariable(id) {
   let modalContent = `<div class="p-4 text-center grid grid-cols-1 gap-4">
     <input id="m7t85jokv" type="text" placeholder="-- added automatically" onkeydown="
         if (event.key === 'Enter') {
-          document.querySelector('dialog[open]').querySelector('header > button:last-child').onclick();
+          document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
         }
       ">
       <button 
@@ -3424,6 +3515,7 @@ function renameRootVariable(id) {
         onclick="
           saveState();
           delete project.css.rootVariables['${id}']; 
+          localStorage.setItem('Polyrise', JSON.stringify(project));
           saveState();
           App.render('#app');
           renderPreview();
@@ -3456,8 +3548,11 @@ function renameRootVariable(id) {
   
           // Now delete the old style object
           delete project.css.rootVariables[`${id}`];
+          localStorage.setItem('Polyrise', JSON.stringify(project));
 
           saveState();
+          App.render("#app");
+          renderPreview();
         }
       } else {
         Modal.render({
@@ -3465,9 +3560,6 @@ function renameRootVariable(id) {
           content: "No value detected!"
         });
       }
-      
-      App.render("#app");
-      renderPreview();
     }
   });
 }
@@ -3566,13 +3658,18 @@ function addStylePropModal(id, obj) {
           </select>
         </div>
       </div>
-      <input id="ool1zyibs" type="text" placeholder="Type css property here...">
+      <input id="ool1zyibs" type="text" placeholder="Type css property here..." onkeydown="
+        if (event.key === 'Enter') {
+          document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
+        }
+      "/>
     </div>`;
 
   Modal.render({
     title: `Add New Style to "${id}"`,
     content: modalContent,
     onLoad() {
+      document.getElementById('ool1zyibs').focus();
       const propertyTypeSelect = document.getElementById('property-type');
       const unitSelect = document.getElementById('property-unit');
       const unitSection = document.getElementById('unit-section');
@@ -3610,18 +3707,25 @@ function addStylePropModal(id, obj) {
       };
     },
     onConfirm() {
-      const propertyType = document.getElementById('ool1zyibs').value;
+      const propertyTypeInput = document.getElementById('ool1zyibs').value;
       const unit = document.getElementById('property-unit') ? document.getElementById('property-unit').value : '';
-      const defaultValue = defaultValues[propertyType] || defaultValues['default'];
+      const defaultValue = defaultValues[propertyTypeInput] || defaultValues['default'];
       const finalValue = unit ? `${defaultValue}${unit}` : defaultValue;
       const noUnit = ['opacity', 'z-index'];
 
-      if (propertyType) {
-        if (noUnit.includes(propertyType)) {
-          obj[propertyType] = "1";
-        } else {
-          obj[propertyType] = finalValue;
-        }
+      if (propertyTypeInput) {
+        const properties = propertyTypeInput.split(',').map(prop => prop.trim());
+
+        properties.forEach(propertyType => {
+          const defaultValue = defaultValues[propertyType] || defaultValues['default'];
+          const finalValue = unit ? `${defaultValue}${unit}` : defaultValue;
+
+          if (noUnit.includes(propertyType)) {
+            obj[propertyType] = "1";
+          } else {
+            obj[propertyType] = finalValue;
+          }
+        });
 
         App.render("#app");
         renderPreview();
@@ -3639,7 +3743,7 @@ function renameStyleTarget(target) {
   let modalContent = `<div class="p-4 text-center">
     <input id="lnjvy3iz2" type="text" placeholder="Style name/target..." onkeydown="
         if (event.key === 'Enter') {
-          document.querySelector('dialog[open]').querySelector('header > button:last-child').onclick();
+          document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
         }
       ">
   </div>`;
@@ -3659,7 +3763,7 @@ function renameStyleTarget(target) {
             title: `Unable to add style!`,
             content: "Style already exists!"
           });
-        } else if (project.css.styles[target]) {
+        } else if (project.css.styles[`${target}`]) {
           // Remove the storage of the styles target before changing
           data.stylesTarget = null;
 
@@ -3671,6 +3775,12 @@ function renameStyleTarget(target) {
 
           // Target the new style
           data.stylesTarget = value;
+
+          saveState();
+
+          // re-render the ui
+          App.render('#app');
+          renderPreview();
         }
       } else {
         Modal.render({
@@ -3700,6 +3810,17 @@ function deleteStyleTarget(target) {
 }
 function addBreakpoint() {
   let modalContent = `
+    <select 
+      id="j6xqh4air" 
+      onchange="document.getElementById('vvrh9nxwk').value = this.value;"
+    >
+      <option value="">none</option>
+      <option value="640">sm (640px)</option>
+      <option value="768">md (768px)</option>
+      <option value="1024">lg (1024px)</option>
+      <option value="1280">xl (1280px)</option>
+      <option value="1536">2xl (1536px)</option>
+    </select>
     <input 
       id="vvrh9nxwk" 
       type="number" 
@@ -3721,13 +3842,14 @@ function addBreakpoint() {
     onConfirm() {
       const value = document.getElementById('vvrh9nxwk').value;
       if (value) {
-        if (project.css.breakpoints[`${value}`]) {
+        if (project.css.breakpoints[`${value}px`]) {
           Modal.render({
             title: `Unable to add breakpoint!`,
             content: "Breakpoint already exists!"
           });
         } else {
-          project.css.breakpoints[value] = {
+          project.css.breakpoints[`${value}px`] = {};
+          project.css.breakpoints[`${value}px`][`${data.stylesTarget}`] = {
             "base": {},
             "pseudos": []
           };
@@ -3745,7 +3867,7 @@ function renameBreakpointKey(size) {
   let modalContent = `<div class="p-4 text-center">
     <input id="mow5ep6l7" type="number" placeholder="Style name/target..." onkeydown="
         if (event.key === 'Enter') {
-          document.querySelector('dialog[open]').querySelector('header > button:last-child').onclick();
+          document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
         }
       ">
   </div>`;
@@ -3808,7 +3930,7 @@ function addAnimation() {
       placeholder="Animation name here...."
       onkeydown="
         if (event.key === 'Enter') {
-          document.querySelector('dialog[open]').querySelector('header > button:last-child').onclick();
+          document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
         }
       ">
   `;
@@ -3830,8 +3952,11 @@ function addAnimation() {
           });
         } else {
           project.css.animations[value] = {
-            "from": {},
-            "to": []
+            "keyframes": {}
+          };
+          project.css.animations[value].keyframes = {
+            "0%": {},
+            "100%": {}
           };
         }
       } else {
@@ -3847,7 +3972,7 @@ function renameAnimation(name) {
   let modalContent = `<div class="p-4 text-center">
     <input id="mow5ep6l7" type="text" placeholder="Animation name here..." onkeydown="
         if (event.key === 'Enter') {
-          document.querySelector('dialog[open]').querySelector('header > button:last-child').onclick();
+          document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
         }
       ">
   </div>`;
@@ -3915,7 +4040,7 @@ function addKeyFrame() {
       placeholder="From, To, 0%, 50%, 100%, etc:"
       onkeydown="
         if (event.key === 'Enter') {
-          document.querySelector('dialog[open]').querySelector('header > button:last-child').onclick();
+          document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
         }
       ">
   `;
@@ -3936,7 +4061,8 @@ function addKeyFrame() {
             content: "Keyframe already exists!"
           });
         } else {
-          project.css.animations[data.animationTarget].keyframes[value] = {};
+          project.css.animations[data.animationTarget].keyframes[`${value}`] = {};
+          saveState();
         }
       } else {
         Modal.render({
@@ -3951,7 +4077,7 @@ function renameKeyFrame(name) {
   let modalContent = `<div class="p-4 text-center">
     <input id="mow5ep6l7" type="text" placeholder="From, To, 0%, 50%, 100%, etc:" onkeydown="
         if (event.key === 'Enter') {
-          document.querySelector('dialog[open]').querySelector('header > button:last-child').onclick();
+          document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
         }
       ">
   </div>`;
@@ -3983,6 +4109,7 @@ function renameKeyFrame(name) {
 
           // Make the new name the target
           data.animationKeyframe = value;
+          saveState();
         }
       } else {
         Modal.render({
@@ -4005,6 +4132,7 @@ function deleteKeyFrame(name) {
       // Remove the storage of the styles target before changing
       data.animationKeyframe = null;
       delete project.css.animations[data.animationTarget].keyframes[name];
+      saveState();
       App.render("#app");
     }
   });
@@ -4018,7 +4146,7 @@ function addToKeyframe() {
       placeholder="From, To, 0%, 50%, 100%, etc:"
       onkeydown="
         if (event.key === 'Enter') {
-          document.querySelector('dialog[open]').querySelector('header > button:last-child').onclick();
+          document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
         }
       ">
   `;
@@ -4040,6 +4168,7 @@ function addToKeyframe() {
           });
         } else {
           project.css.animations[data.animationTarget].keyframes[value] = {};
+          saveState();
         }
       } else {
         Modal.render({
@@ -4050,15 +4179,13 @@ function addToKeyframe() {
     }
   });
 }
-function deleteStyleProp(id, prop, e) {
+function deleteStyleProp(id, prop, e, detect = null) {
   let obj = null;
-  if (data.deleteTargetInModal) {
-    if (data.deleteTargetInModal === "breakpoints") {
-      if (data.stylesTarget && typeof data.stylesTarget === 'object') {
-        obj = project.css.breakpoints[`${data.breakpointKey}px`];
-      }
+  if (detect) {
+    if (detect === "breakpoints") {
+      obj = project.css.breakpoints[`${data.breakpointKey}px`][id][data.stylesPropTarget];
     }
-    if (data.deleteTargetInModal === "animations") {
+    if (detect === "animations") {
       obj = project.css.animations[data.animationTarget].keyframes[data.animationKeyframe]
     }
   } else {
@@ -4066,6 +4193,7 @@ function deleteStyleProp(id, prop, e) {
   }
   // Delete the property
   if (obj[prop]) delete obj[prop];
+  saveState();
 
   // Remove the modal
   e.closest('dialog[open]').remove();
@@ -4073,7 +4201,6 @@ function deleteStyleProp(id, prop, e) {
   // Re-render the app and preview
   App.render("#app");
   renderPreview();
-  saveState();
 }
 function clearStyles(layers, query, callback) {
   // first delete the style object
@@ -4107,6 +4234,9 @@ function clearStyles(layers, query, callback) {
 function styleModal(id, prop, currentValue, detect = null) {
   const cssFixedValueProperties = data.cssFixedValueProperties;
   const cssRangedValueProperties = data.cssRangedValueProperties;
+
+  let detected = null;
+  if (detect) detected = detect;
 
   // Initialize the modal content based on the property type
   let modalContent = '';
@@ -4157,7 +4287,7 @@ function styleModal(id, prop, currentValue, detect = null) {
   modalContent += `
     <div class="p-4 text-center">
       <button class="w-full border-red-400 text-red-400 rounded-md py-2 mt-4 bg-transparent font-thin" 
-        onclick="deleteStyleProp('${id}', '${prop}', this)">Delete Property</button>
+        onclick="deleteStyleProp('${id}', '${prop}', this${detected ? `, '${detected}'` : '' })">Delete Property</button>
     </div>`;
 
   // Render the modal
@@ -4171,8 +4301,6 @@ function styleModal(id, prop, currentValue, detect = null) {
       const newValue = document.getElementById('new-value').value;
       const newUnit = document.getElementById('new-unit') ? document.getElementById('new-unit').value : '';
       const finalValue = newUnit ? `${newValue}${newUnit}` : newValue;
-
-      // addStylePropModal('.hero', 'base');
 
       let obj = null;
       if (detect) {
@@ -4204,6 +4332,230 @@ function styleModal(id, prop, currentValue, detect = null) {
       App.render("#app");
       renderPreview();
       saveState();
+    }
+  });
+}
+function addPseudo(selector) {
+  // Ensure the selector exists and initialize pseudos if not already present
+  if (!project.css.styles[selector]) return;
+  if (!project.css.styles[selector].pseudos) {
+    project.css.styles[selector].pseudos = [];
+  }
+
+  // Define available pseudo-classes and pseudo-elements
+  const pseudos = [
+    'none',
+    ':active',
+    ':after',
+    ':before',
+    ':first-child',
+    ':focus',
+    ':focus-visible',
+    ':focus-within',
+    ':hover',
+    ':last-child',
+    ':nth-child',
+    ':target',
+    ':visited',
+    '::-webkit-scrollbar',
+    '::-webkit-scrollbar-thumb',
+    '::-webkit-scrollbar-track',
+    '::before',
+    '::after'
+  ];
+
+  let pseudoOptions = pseudos.map(pseudo => `
+    <option value="${pseudo === 'none' ? '' : pseudo}">${pseudo}</option>
+  `).join('');
+
+  let modalContent = `
+    <div class="p-4">
+      <label class="block mb-2">Select Pseudo-Class/Element:</label>
+      <select 
+        id="pseudo-selector" 
+        class="w-full rounded-md capitalize text-[.6rem]" 
+        onchange="
+          document.getElementById('pseudo-input').value = this.value;
+        ">
+        <option value="">-- Select a pseudo --</option>
+        ${pseudoOptions}
+      </select>
+      <input 
+        id="pseudo-input" 
+        type="text" 
+        placeholder="Enter CSS property and value here (e.g., display:none):"
+        class="w-full rounded-md text-[.6rem] mt-4"
+        onkeydown="
+          if (event.key === 'Enter') {
+            document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
+          }
+        ">
+    </div>
+  `;
+
+  // Render the modal
+  Modal.render({
+    title: `Add A Pseudo-Class/Element`,
+    content: modalContent,
+    onLoad() {
+      document.getElementById('pseudo-selector').focus();
+    },
+    onConfirm() {
+      const pseudoSelector = document.getElementById('pseudo-selector').value.trim();
+      const pseudoStyles = document.getElementById('pseudo-input').value.trim();
+
+      if (pseudoSelector && pseudoStyles) {
+        // Convert pseudoStyles into an object
+        const styles = pseudoStyles.split(';').reduce((acc, rule) => {
+          const [property, value] = rule.split(':').map(s => s.trim());
+          if (property && value) acc[property] = value;
+          return acc;
+        }, {});
+
+        const existingPseudo = project.css.styles[selector].pseudos.find(pseudo => pseudo.selector === pseudoSelector);
+
+        if (existingPseudo) {
+          // Merge new styles with existing styles if pseudo already exists
+          existingPseudo.styles = {
+            ...existingPseudo.styles,
+            ...styles
+          };
+        } else {
+          // Add a new pseudo object
+          let obj = {
+            "selector": pseudoSelector,
+            "styles": styles
+          };
+          project.css.styles[selector].pseudos.push(obj);
+        }
+
+        App.render("#app");
+        renderPreview();
+        saveState();
+      } else {
+        Modal.render({
+          title: `Unable to add pseudo`,
+          content: "Please select a pseudo and enter valid CSS properties and values."
+        });
+      }
+    }
+  });
+}
+function renamePseudo(oldName) {
+  // Define available pseudo-classes and pseudo-elements
+  const pseudos = [
+    'none',
+    ':active',
+    ':after',
+    ':before',
+    ':first-child',
+    ':focus',
+    ':focus-visible',
+    ':focus-within',
+    ':hover',
+    ':last-child',
+    ':nth-child',
+    ':target',
+    ':visited',
+    '::-webkit-scrollbar',
+    '::-webkit-scrollbar-thumb',
+    '::-webkit-scrollbar-track',
+    '::before',
+    '::after'
+  ];
+
+  let pseudoOptions = pseudos.map(pseudo => `
+    <option value="${pseudo === 'none' ? '' : pseudo}">${pseudo}</option>
+  `).join('');
+
+  let modalContent = `
+    <div class="p-4">
+      <label class="block mb-2">Select Pseudo-Class/Element to Rename:</label>
+      <select 
+        id="pseudo-selector" 
+        class="w-full rounded-md capitalize text-[.6rem]" 
+        onchange="
+          document.getElementById('pseudo-name-input').value = this.value;
+        ">
+        <option value="">-- Select a pseudo --</option>
+        ${pseudoOptions}
+      </select>
+      <input 
+        id="pseudo-name-input" 
+        type="text" 
+        placeholder="Enter new name here..."
+        class="w-full rounded-md text-[.6rem] mt-4"
+        onkeydown="
+          if (event.key === 'Enter') {
+            document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
+          }
+        ">
+    </div>
+  `;
+
+  // Render the modal
+  Modal.render({
+    title: `Are you sure you want to rename the "${oldName}" pseudo-class/element?`,
+    content: modalContent,
+    onLoad() {
+      document.getElementById('pseudo-name-input').focus();
+    },
+    onConfirm() {
+      const newName = document.getElementById('pseudo-name-input').value.trim();
+      if (newName) {
+        const style = project.css.styles[data.stylesTarget];
+        if (!style || !style.pseudos) return;
+
+        const existingPseudo = style.pseudos.find(pseudo => pseudo.selector === newName);
+        if (existingPseudo) {
+          Modal.render({
+            title: `Unable to rename pseudo!`,
+            content: "Pseudo with the new name already exists!"
+          });
+          return;
+        }
+
+        const pseudoIndex = style.pseudos.findIndex(pseudo => pseudo.selector === oldName);
+        if (pseudoIndex === -1) {
+          Modal.render({
+            title: `Pseudo not found!`,
+            content: `No pseudo with the name "${oldName}" found!`
+          });
+          return;
+        }
+
+        // Rename the pseudo
+        style.pseudos[pseudoIndex].selector = newName;
+
+        App.render("#app");
+        saveState();
+      } else {
+        Modal.render({
+          title: `Unable to rename pseudo`,
+          content: "No value detected!"
+        });
+      }
+    }
+  });
+}
+function deletePseudo() {
+  const name = data.pseudosSelector;
+  const pseudoIndex = data.pseudosSelectorIndex;
+  let modalContent = `<div class="p-4 text-center">You will still be able to undo.</div>`;
+
+  // Render the modal
+  Modal.render({
+    title: `Are you sure you want to delete the "${name}" pseudo-class/element?`,
+    content: modalContent,
+    onConfirm() {
+      const style = project.css.styles[data.stylesTarget];
+      if (!style || !style.pseudos) return;
+
+      data.pseudosSelector = null;
+      data.pseudosSelectorIndex = 0;
+      style.pseudos.splice(pseudoIndex, 1);
+      saveState();
+      renderPreview();
     }
   });
 }
@@ -4509,7 +4861,7 @@ function css2json(css) {
 
   return json;
 }
-function json2css(styles, preprocessor) {
+function json2css(styles) {
   let css = '';
   let symbol = "";
   let semicolon = ";";
@@ -4518,134 +4870,302 @@ function json2css(styles, preprocessor) {
 
   // Function to check if a value contains CSS variables
   function containCssVar(value) {
-      return /var\(--/.test(value);
+    return /var\(--/.test(value);
   }
 
   // Function to process styles recursively
   function processStyles(selector, style, indentLevel = 0) {
-      let indent = '  '.repeat(indentLevel);
-      let innerCss = '';
+    let indent = '  '.repeat(indentLevel);
+    let innerCss = '';
 
-      const variables = style.variables || {};
-      const baseStyles = style.base || {};
-      const pseudos = style.pseudos || [];
-      const children = style.children || {}; // Account for children
+    const variables = style.variables || {};
+    const baseStyles = style.base || {};
+    const pseudos = style.pseudos || [];
+    const children = style.children || {}; // Account for children
 
-      innerCss += `${indent}${selector} ${openBrace}\n`;
+    // Add the base selector
+    innerCss += `${indent}${selector} ${openBrace}\n`;
 
-      // Variables
-      for (const [variable, value] of Object.entries(variables)) {
-          innerCss += `${indent}  ${symbol}${variable}: ${value}${semicolon}\n`;
+    // Variables
+    for (const [variable, value] of Object.entries(variables)) {
+      innerCss += `${indent}  ${symbol}${variable}: ${value}${semicolon}\n`;
+    }
+
+    // Base styles
+    for (let [property, value] of Object.entries(baseStyles)) {
+      if (containCssVar(value)) {
+        // Replace CSS variables with CSS variables, handling mixed content
+        value = value.replace(/var\(--([a-zA-Z0-9-_]+)\)/g, (match, varName) => {
+          return `var(--${varName})`;
+        });
       }
+      innerCss += `${indent}  ${property}: ${value}${semicolon}\n`;
+    }
 
-      // Base styles
-      for (let [property, value] of Object.entries(baseStyles)) {
-          if (containCssVar(value)) {
-              // Replace CSS variables with CSS variables, handling mixed content
-              value = value.replace(/var\(--([a-zA-Z0-9-_]+)\)/g, (match, varName) => {
-                  return `var(--${varName})`;
-              });
-          }
-          innerCss += `${indent}  ${property}: ${value}${semicolon}\n`;
+    innerCss += `${indent}${closeBrace}\n`;
+
+    // Pseudo-classes/styles
+    pseudos.forEach(({ selector: pseudoSelector, styles: pseudoStyles }) => {
+      innerCss += `${indent}${selector}${pseudoSelector} ${openBrace}\n`;
+      for (let [property, value] of Object.entries(pseudoStyles)) {
+        if (containCssVar(value)) {
+          value = value.replace(/var\(--([a-zA-Z0-9-_]+)\)/g, (match, varName) => {
+            return `var(--${varName})`;
+          });
+        }
+        innerCss += `${indent}  ${property}: ${value}${semicolon}\n`;
       }
-
-      // Pseudo-classes/styles
-      pseudos.forEach(({ selector: pseudoSelector, styles: pseudoStyles }) => {
-          innerCss += `${indent}  ${selector}${pseudoSelector} ${openBrace}\n`;
-          for (let [property, value] of Object.entries(pseudoStyles)) {
-              if (containCssVar(value)) {
-                  value = value.replace(/var\(--([a-zA-Z0-9-_]+)\)/g, (match, varName) => {
-                      return `var(--${varName})`;
-                  });
-              }
-              innerCss += `${indent}    ${property}: ${value}${semicolon}\n`;
-          }
-          innerCss += `${indent}  ${closeBrace}\n`;
-      });
-
-      // Recursively process children
-      for (const [childSelector, childStyle] of Object.entries(children)) {
-          innerCss += processStyles(`${selector} ${childSelector}`, childStyle, indentLevel + 1);
-      }
-
       innerCss += `${indent}${closeBrace}\n`;
+    });
 
-      return innerCss;
+    // Recursively process children
+    for (const [childSelector, childStyle] of Object.entries(children)) {
+      innerCss += processStyles(`${selector} ${childSelector}`, childStyle, indentLevel + 1);
+    }
+
+    return innerCss;
   }
 
   // Function to process animations
   function processAnimations(animations, indentLevel = 0) {
-      let indent = '  '.repeat(indentLevel);
-      let animationCss = '';
+    let indent = '  '.repeat(indentLevel);
+    let animationCss = '';
 
-      for (const [animationName, animation] of Object.entries(animations)) {
-          animationCss += `${indent}@keyframes ${animationName} ${openBrace}\n`;
+    for (const [animationName, animation] of Object.entries(animations)) {
+      animationCss += `${indent}@keyframes ${animationName} ${openBrace}\n`;
 
-          for (const [keyframe, styles] of Object.entries(animation.keyframes)) {
-              animationCss += `${indent}  ${keyframe} ${openBrace}\n`;
-              for (let [property, value] of Object.entries(styles)) {
-                  if (containCssVar(value)) {
-                      value = value.replace(/var\(--([a-zA-Z0-9-_]+)\)/g, (match, varName) => {
-                          return `var(--${varName})`;
-                      });
-                  }
-                  animationCss += `${indent}    ${property}: ${value}${semicolon}\n`;
-              }
-              animationCss += `${indent}  ${closeBrace}\n`;
+      for (const [keyframe, styles] of Object.entries(animation.keyframes)) {
+        animationCss += `${indent}  ${keyframe} ${openBrace}\n`;
+        for (let [property, value] of Object.entries(styles)) {
+          if (containCssVar(value)) {
+            value = value.replace(/var\(--([a-zA-Z0-9-_]+)\)/g, (match, varName) => {
+              return `var(--${varName})`;
+            });
           }
-
-          animationCss += `${indent}${closeBrace}\n`;
+          animationCss += `${indent}    ${property}: ${value}${semicolon}\n`;
+        }
+        animationCss += `${indent}  ${closeBrace}\n`;
       }
 
-      return animationCss;
+      animationCss += `${indent}${closeBrace}\n`;
+    }
+
+    return animationCss;
   }
 
   // Function to process breakpoints
   function processBreakpoints(breakpoints, indentLevel = 0) {
-      let indent = '  '.repeat(indentLevel);
-      let breakpointCss = '';
+    let indent = '  '.repeat(indentLevel);
+    let breakpointCss = '';
 
-      for (const [breakpoint, styles] of Object.entries(breakpoints)) {
-          breakpointCss += `${indent}@media (min-width: ${breakpoint}) ${openBrace}\n`;
-          for (const [selector, style] of Object.entries(styles)) {
-              breakpointCss += processStyles(selector, style, indentLevel + 1);
-          }
-          breakpointCss += `${indent}${closeBrace}\n`;
+    for (const [breakpoint, styles] of Object.entries(breakpoints)) {
+      breakpointCss += `${indent}@media (min-width: ${breakpoint}) ${openBrace}\n`;
+      for (const [selector, style] of Object.entries(styles)) {
+        breakpointCss += processStyles(selector, style, indentLevel + 1);
       }
+      breakpointCss += `${indent}${closeBrace}\n`;
+    }
 
-      return breakpointCss;
+    return breakpointCss;
   }
 
   // Define :root variables
   if (styles.rootVariables && Object.keys(styles.rootVariables).length) {
-      css += ":root {\n";
-      for (const [variable, value] of Object.entries(styles.rootVariables)) {
-          css += `  ${variable}: ${value}${semicolon}\n`;
-      }
-      css += "}\n\n";
+    css += ":root {\n";
+    for (const [variable, value] of Object.entries(styles.rootVariables)) {
+      css += `  ${variable}: ${value}${semicolon}\n`;
+    }
+    css += "}\n\n";
   }
 
   // Define styles for each class
   for (const [classId, style] of Object.entries(styles.styles)) {
-      if (!style || (!Object.keys(style.variables || {}).length &&
-          !Object.keys(style.base || {}).length &&
-          !Object.keys(style.pseudos || {}).length &&
-          !Object.keys(style.children || {}).length)) {
-          continue; // Skip empty styles
-      }
+    if (!style || (!Object.keys(style.variables || {}).length &&
+        !Object.keys(style.base || {}).length &&
+        !Object.keys(style.pseudos || {}).length &&
+        !Object.keys(style.children || {}).length)) {
+      continue; // Skip empty styles
+    }
 
-      const selector = classId;
-      css += processStyles(selector, style);
+    const selector = classId;
+    css += processStyles(selector, style);
   }
 
   // Process animations
   if (Object.keys(styles.animations || {}).length) {
-      css += processAnimations(styles.animations);
+    css += processAnimations(styles.animations);
   }
 
   // Process breakpoints (media queries)
   if (Object.keys(styles.breakpoints || {}).length) {
-      css += processBreakpoints(styles.breakpoints);
+    css += processBreakpoints(styles.breakpoints);
+  }
+
+  return css;
+}
+
+function json2preprocessor(styles) {
+  let css = '';
+  let symbol = "";
+  let semicolon = ";";
+  let openBrace = "{";
+  let closeBrace = "}";
+
+  // set proper symbols
+  if (data.preprocessors.includes(project.convertTo)) {
+    if (project.convertTo === "sass" || project.convertTo === "scss") symbol = "$";
+    if (project.convertTo === "sass") {
+      semicolon = "";
+      openBrace = "";
+      closeBrace = "";
+    }
+    if (project.convertTo === "less") symbol = "@";
+  }
+
+  // Function to check if a value contains CSS variables
+  function containcssVar(value) {
+    return /var\(--/.test(value);
+  }
+
+  // Function to process styles recursively
+  function processStyles(selector, style, indentLevel = 0) {
+    let indent = '  '.repeat(indentLevel);
+    let innercss = '';
+
+    const variables = style.variables || {};
+    const baseStyles = style.base || {};
+    const pseudos = style.pseudos || [];
+    const children = style.children || {}; // Account for children
+
+    innercss += `${indent}${selector} ${openBrace}\n`;
+
+    // Variables (convert CSS variables to css variables)
+    for (const [variable, value] of Object.entries(variables)) {
+      innercss += `${indent}  ${symbol}${variable}: ${value}${semicolon}\n`;
+    }
+
+    // Base styles
+    for (let [property, value] of Object.entries(baseStyles)) {
+      if (property.startsWith('--')) {
+        property = property.split('--').join(symbol);
+      }
+
+      // Check if value contains a CSS variable
+      if (containcssVar(value)) {
+        // Replace CSS variables with css variables, handling mixed content
+        value = value.replace(/var\(--([a-zA-Z0-9-_]+)\)/g, (match, varName) => {
+          if (!property.startsWith('--')) {
+            return `${symbol}${varName}`;
+          } else {
+            return `${symbol}${varName}`;
+          }
+        });
+      }
+      innercss += `${indent}  ${property}: ${value}${semicolon}\n`;
+    }
+
+    // Pseudo-classes/styles
+    pseudos.forEach(({ selector: pseudoSelector, styles: pseudoStyles }) => {
+      innercss += `${indent}  &${pseudoSelector} ${openBrace}\n`;
+      for (let [property, value] of Object.entries(pseudoStyles)) {
+        // Check if value contains a CSS variable
+        if (containcssVar(value)) {
+          value = value.replace(/var\(--([a-zA-Z0-9-_]+)\)/g, (match, varName) => {
+            return `${symbol}${varName}`;
+          });
+        }
+        innercss += `${indent}    ${property}: ${value}${semicolon}\n`;
+      }
+      innercss += `${indent}  ${closeBrace}\n`;
+    });
+
+    // Recursively process children
+    if (children) {
+      for (const [childSelector, childStyle] of Object.entries(children)) {
+        innercss += processStyles(`${selector} ${childSelector}`, childStyle, indentLevel + 1);
+      }
+    }
+
+    innercss += `${indent}${closeBrace}\n`;
+
+    return innercss;
+  }
+
+  // Function to process animations
+  function processAnimations(animations, indentLevel = 0) {
+    let indent = '  '.repeat(indentLevel);
+    let animationCSS = '';
+
+    for (const [animationName, animation] of Object.entries(animations)) {
+      animationCSS += `${indent}@keyframes ${animationName} ${openBrace}\n`;
+
+      for (const [keyframe, styles] of Object.entries(animation.keyframes)) {
+        animationCSS += `${indent}  ${keyframe} ${openBrace}\n`;
+        for (let [property, value] of Object.entries(styles)) {
+          // Replace CSS variables with preprocessor variables if needed
+          if (containcssVar(value)) {
+            value = value.replace(/var\(--([a-zA-Z0-9-_]+)\)/g, (match, varName) => {
+              return `${symbol}${varName}`;
+            });
+          }
+          animationCSS += `${indent}    ${property}: ${value}${semicolon}\n`;
+        }
+        animationCSS += `${indent}  ${closeBrace}\n`;
+      }
+
+      animationCSS += `${indent}${closeBrace}\n`;
+    }
+
+    return animationCSS;
+  }
+
+  // Function to process breakpoints
+  function processBreakpoints(breakpoints, indentLevel = 0) {
+    let indent = '  '.repeat(indentLevel);
+    let breakpointCSS = '';
+
+    for (const [breakpoint, styles] of Object.entries(breakpoints)) {
+      breakpointCSS += `${indent}@media (max-width: ${breakpoint}) ${openBrace}\n`;
+      for (const [selector, style] of Object.entries(styles.base || {})) {
+        breakpointCSS += processStyles(selector, style, indentLevel + 1);
+      }
+      breakpointCSS += `${indent}${closeBrace}\n`;
+    }
+
+    return breakpointCSS;
+  }
+
+  // Define :root variables (css supports variables using $)
+  let rootVariables = [];
+  if (styles.rootVariables && Object.keys(styles.rootVariables).length) {
+    for (const [variable, value] of Object.entries(styles.rootVariables)) {
+      rootVariables.push(variable);
+      css += `${symbol}${variable.split('--').join('')}: ${value}${semicolon}\n`;
+    }
+    css += '\n';
+  }
+
+  // Define styles for each class
+  for (const [classId, style] of Object.entries(styles.styles)) {
+    if (!style || (!Object.keys(style.variables || {}).length &&
+        !Object.keys(style.base || {}).length &&
+        !Object.keys(style.pseudos || {}).length &&
+        !Object.keys(style.children || {}).length)) {
+      continue; // Skip empty styles
+    }
+
+    const selector = classId;
+    css += processStyles(selector, style);
+  }
+
+  // Process animations
+  if (Object.keys(styles.animations || {}).length) {
+    css += processAnimations(styles.animations);
+  }
+
+  // Process breakpoints (media queries)
+  if (Object.keys(styles.breakpoints || {}).length) {
+    css += processBreakpoints(styles.breakpoints);
   }
 
   return css;
@@ -4732,6 +5252,7 @@ function saveState() {
     data.history = data.history.slice(0, data.historyIndex + 1); // Trim any redo history
     data.history.push(stateString); // Save the new state
     data.historyIndex++;
+    localStorage.setItem('Polyrise', JSON.stringify(project));
   }
 }
 function undo() {
@@ -5972,12 +6493,77 @@ function updateSvgMedia(id, type) {
     }
   });
 }
-
 function copyToClipboard(text) {
   navigator.clipboard.writeText(text).then(function() {
   }).catch(function(error) {
     console.error('Failed to copy text: ', error);
   });
+}
+function collectComponents(layers) {
+  const existingNames = new Set(project.components.map(comp => comp.name));
+
+  layers.forEach(layer => {
+    if (layer.isComponent) {
+      // Check if the layer name already exists
+      if (!existingNames.has(layer.name)) {
+        const clone = { ...layer };
+        let uniqueId = generateId();
+        clone.id = uniqueId;
+
+        project.components.push({
+          id: uniqueId,
+          name: layer.name,
+          code: clone
+        });
+
+        // Add the new name to the set
+        existingNames.add(layer.name);
+      }
+    }
+  });
+}
+function addComponent() {
+  if (data.selectedLayerIds.length === 0) return;
+  
+  saveState(); // Save state before making changes
+
+  data.selectedLayerIds.forEach(id => {
+    const result = findLayerById(id, project.html);
+
+    if (result) {
+      const { layer } = result;
+      const clone = { ...layer };
+      clone.id = generateId();
+
+      const newHtml = json2html(clone);
+
+      // Check for duplicate name or HTML
+      const isDuplicate = project.components.some(comp =>
+        comp.name === clone.name || comp.code === newHtml
+      );
+
+      if (!isDuplicate) {
+        project.components.push({
+          name: clone.name,
+          code: newHtml
+        });
+      } else {
+        console.warn(`Component with name "${clone.name}" or identical HTML already exists.`);
+      }
+    } else {
+      console.error('Layer not found for ID:', id);
+    }
+  });
+
+  saveState(); // Save state after making changes
+}
+function deleteComponent(index) {
+  if (index >= 0 && index < project.components.length) {
+    project.components.splice(index, 1);
+    saveState(); // Save state after making changes
+  } else {
+    console.error('Invalid index:', index);
+  }
 }
 
 // iframe functions
@@ -6090,6 +6676,9 @@ function importJSON(obj) {
   project.meta = obj.meta;
   project.libraries = obj.libraries;
   project.css = obj.css;
+  if (obj.components) {
+    project['components'] = obj.components;
+  }
   project.html = obj.html;
 }
 function newProject() {
@@ -7239,7 +7828,6 @@ window.emptyStorage = emptyStorage;
 window.updateVersionPart = updateVersionPart;
 window.commandPalette = commandPalette;
 window.renameRootVariable = renameRootVariable;
-window.styleModal = styleModal;
 window.addStyle = addStyle;
 window.addStylePropModal = addStylePropModal;
 window.renameStyleTarget = renameStyleTarget;
@@ -7255,6 +7843,8 @@ window.renameKeyFrame = renameKeyFrame;
 window.deleteKeyFrame = deleteKeyFrame;
 window.deleteStyleProp = deleteStyleProp;
 window.clearStyles = clearStyles;
+window.styleModal = styleModal;
+window.addPseudo = addPseudo;
 
 window.html2json = html2json;
 window.json2html = json2html;
@@ -7295,6 +7885,9 @@ window.updateSvgMedia = updateSvgMedia;
 window.updateMediaSource = updateMediaSource;
 window.addAttribute = addAttribute;
 window.copyToClipboard = copyToClipboard;
+window.collectComponents = collectComponents;
+window.addComponent = addComponent;
+window.deleteComponent = deleteComponent;
 
 window.generateId = generateId;
 window.resizeCanvas = resizeCanvas;
@@ -7322,7 +7915,6 @@ document.addEventListener('DOMContentLoaded', function() {
   window.onload = () => {
     App.render('#app');
     getIFrameClientSize();
-    collectSelectedIDs(project.html);
     
     // Set the state to true when the Command/Shift key is down
     window.onkeydown = e => {
@@ -7404,6 +7996,8 @@ document.addEventListener('DOMContentLoaded', function() {
       importJSON(JSON.parse(localStorage.getItem('Polyrise')));
       setTimeout(() => renderPreview(true), 100);
     }
+    collectSelectedIDs(project.html);
+    collectComponents(project.html);
     window.onresize = () => getIFrameClientSize();
   };
 });
