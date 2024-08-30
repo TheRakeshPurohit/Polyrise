@@ -7949,6 +7949,8 @@ window.deleteStyleProp = deleteStyleProp;
 window.clearStyles = clearStyles;
 window.styleModal = styleModal;
 window.addPseudo = addPseudo;
+window.renamePseudo - renamePseudo;
+window.deletePseudo - deletePseudo;
 
 window.html2json = html2json;
 window.json2html = json2html;
