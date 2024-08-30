@@ -7926,6 +7926,7 @@ function diffNodes(oldNode, newNode) {
 
 // Make functions available in global space
 window.Modal = Modal;
+window.librariesDialog = librariesDialog;
 window.attributesModal = attributesModal;
 window.addAttribute = addAttribute;
 window.emptyStorage = emptyStorage;
@@ -7955,6 +7956,8 @@ window.json2html = json2html;
 window.saveState = saveState;
 window.undo = undo;
 window.redo = redo;
+window.addLibrary = addLibrary;
+window.fetchSuggestions = fetchSuggestions;
 window.customCode = customCode;
 window.removeScript = removeScript;
 window.removeScripts = removeScripts;
