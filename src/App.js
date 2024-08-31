@@ -155,6 +155,76 @@ let d = {
     "white-space": "normal",
     "width": "auto",
     "z-index": "1",
+  
+    // Fixed value properties
+    "position": "static",
+    "display": "block",
+    "overflow": "visible",
+    "visibility": "visible",
+    "float": "none",
+    "clear": "none",
+    "white-space": "normal",
+    "flex-direction": "row",
+    "justify-content": "flex-start",
+    "align-items": "stretch",
+    "align-content": "stretch",
+    "flex-wrap": "nowrap",
+    "background-attachment": "scroll",
+    "background-clip": "border-box",
+    "background-repeat": "repeat",
+    "background-size": "auto",
+    "border-style": "none",
+    "border-width": "medium",
+    "border-collapse": "separate",
+    "caption-side": "top",
+    "cursor": "auto",
+    "direction": "ltr",
+    "empty-cells": "show",
+    "list-style-type": "disc",
+    "list-style-position": "outside",
+    "table-layout": "auto",
+    "text-align": "left",
+    "text-decoration-line": "none",
+    "text-decoration-style": "solid",
+    "text-transform": "none",
+    "unicode-bidi": "normal",
+    "vertical-align": "baseline",
+    "word-break": "normal",
+    "writing-mode": "horizontal-tb",
+    "align-self": "auto",
+    "align-tracks": "normal",
+    "appearance": "auto",
+    "backface-visibility": "visible",
+    "box-sizing": "content-box",
+    "column-fill": "balance",
+    "column-span": "none",
+    "flex-basis": "auto",
+    "flex-grow": "0",
+    "flex-shrink": "1",
+    "font-style": "normal",
+    "font-variant": "normal",
+    "font-weight": "normal",
+    "hyphens": "none",
+    "image-rendering": "auto",
+    "isolation": "auto",
+    "line-break": "auto",
+    "mask-type": "luminance",
+    "mix-blend-mode": "normal",
+    "object-fit": "contain",
+    "overflow-anchor": "auto",
+    "overscroll-behavior": "auto",
+    "page-break-after": "auto",
+    "page-break-before": "auto",
+    "page-break-inside": "auto",
+    "pointer-events": "auto",
+    "resize": "none",
+    "scroll-behavior": "auto",
+    "text-orientation": "mixed",
+    "text-overflow": "clip",
+    "touch-action": "auto",
+    "transform-style": "flat",
+    "user-select": "auto",
+    "word-wrap": "normal",
   },  
   cssFixedValueProperties: {
     "position": ["static", "relative", "absolute", "fixed", "sticky", "inherit", "initial", "revert", "revert-layer", "unset"],
@@ -4411,7 +4481,7 @@ function deleteStyleProp(id, prop, e, detect = null) {
     obj = project.css.styles[id][data.stylesPropTarget];
   }
   // Delete the property
-  if (obj[`${prop}`]) delete obj[`${prop}`];
+  if (prop in obj) delete obj[`${prop}`];
   saveState();
 
   // Remove the modal
@@ -4504,9 +4574,11 @@ function styleModal(id, prop, currentValue, detect = null) {
     content: modalContent,
     onLoad() {
       if (document.getElementById('new-value')) {
-        const input = document.getElementById('new-value');
-        input.focus();
-        input.select();
+        const element = document.getElementById('new-value');
+        element.focus();
+        if (element.tagName.toLowerCase() === 'input') {
+          element.select();
+        }
       }
     },
     onConfirm() {
