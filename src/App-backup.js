@@ -4706,14 +4706,12 @@ function html2json(input) {
       }
     }
   
-    // Collect attributes
-    const props = {};
-    Array.from(element.attributes).forEach(attr => {
-      props[attr.name.toLowerCase()] = attr.value;
-    });
-  
     // Add props only if not empty
-    if (Object.keys(props).length > 0) {
+    if (element.hasAttributes()) {
+      const props = {};
+      Array.from(element.attributes).forEach(attr => {
+        props[`${attr.name.toLowerCase()}`] = `${attr.value}`;
+      });
       obj.props = props;
     }
   
@@ -4727,7 +4725,6 @@ function html2json(input) {
         }
       });
     }
-  
     return obj;
   }
 
@@ -6912,10 +6909,7 @@ function newProject() {
     },
     'alpine.js': {
       source: 'imgs/frameworks/alpine.svg',
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.12.0/alpine.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/alpinejs-datepicker/1.0.6/alpine-datepicker.min.js"
-      ],
+      libraries: [],
       meta: '<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" defer></script>'
     },
     'bootstrap 5': {
@@ -8090,7 +8084,24 @@ function renderPreview(forceRun = false) {
 
 ${json2html(project.html)}
 ${scriptTags ? scriptTags : ''}
-
+    <script>
+      // Intercept hash changes within the iframe
+      window.addEventListener('click', function(event) {
+        if (event.target.tagName === 'A') {
+          const href = event.target.getAttribute('href');
+          if (href && href.startsWith('#')) {
+            event.preventDefault(); // Prevent the default action
+            // Handle hash change, e.g., scroll to the section or update the iframe content if needed
+            const hash = href;
+            // Example: Scroll to the section with the ID from the hash
+            const element = document.querySelector(hash);
+            if (element) {
+              element.scrollIntoView();
+            }
+          }
+        }
+      });
+    </script>
   </body>
 </html>`;
 
