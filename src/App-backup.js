@@ -4369,9 +4369,17 @@ function styleModal(id, prop, currentValue, detect = null) {
     modalContent = `
       <div class="p-4">
         <label class="block mb-2">Current Value: ${currentValue}</label>
-        <input id="new-prop-value" class="w-full rounded-md text-[.6rem]" 
-               type="text" value="${currentValue}" id="new-value"
-               placeholder="Enter new value" />
+        <input 
+          id="new-value"
+          class="w-full rounded-md text-[.6rem]" 
+          type="text" 
+          value="${currentValue}" 
+          placeholder="Enter new value" 
+          onkeydown="
+            if (event.key === 'Enter') {
+              document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
+            }
+          "/>
       </div>`;
   }
 
@@ -4387,9 +4395,10 @@ function styleModal(id, prop, currentValue, detect = null) {
     title: `Modify "${prop}" Style`,
     content: modalContent,
     onLoad() {
-      if (document.getElementById('new-prop-value')) {
-        const input = document.getElementById('new-prop-value');
+      if (document.getElementById('new-value')) {
+        const input = document.getElementById('new-value');
         input.focus();
+        input.select();
       }
     },
     onConfirm() {
@@ -4422,7 +4431,7 @@ function styleModal(id, prop, currentValue, detect = null) {
         delete obj[prop];
       } else {
         // Update the property with the new value
-        obj[prop] = newValue;
+        obj[prop] = `${newValue}`;
       }
 
       saveState();
