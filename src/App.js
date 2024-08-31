@@ -97,33 +97,65 @@ let d = {
   animationTarget: null,
   animationKeyframe: null,
   defaultValues: {
-    'opacity': '1',
-    'z-index': '1',
-    'line-height': 'normal',
-    'font-weight': '400',
-    'font-size': '16px',
-    'flex': '0 1 auto',
-    'grid-column': 'auto',
-    'grid-row': 'auto',
-    'font-stretch': 'normal',
-    'object-fit': 'contain',
-    'object-position': 'center',
-    'overflow': 'visible',
-    'visibility': 'visible',
-    'white-space': 'normal',
-    'text-transform': 'none',
-    'text-align': 'left',
-    'text-decoration': 'none',
-    'transform': 'none',
-    'transition': 'all 0.3s ease',
-    'animation': 'none',
-    'clip': 'auto',
-    'max-lines': 'none',
-    'color': '#000000',
-    'background': '#000000',
-    'background-color': '#000000',
-    'default': '', // A generic default value for other cases
-  },
+    "animation": "none",
+    "animation-delay": "0s",
+    "animation-duration": "0s",
+    "aspect-ratio": "auto",
+    "background": "#000000",
+    "background-color": "#000000",
+    "border-width": "0px",
+    "bottom": "auto",
+    "clip": "auto",
+    "color": "#000000",
+    "column-count": "auto",
+    "column-width": "auto",
+    "columns": "auto",
+    "default": "", // A generic default value for other cases
+    "flex": "0 1 auto",
+    "flex-grow": "0",
+    "flex-shrink": "1",
+    "font-size": "16px",
+    "font-size-adjust": "none",
+    "font-stretch": "normal",
+    "font-weight": "400",
+    "grid-column": "auto",
+    "grid-row": "auto",
+    "height": "auto",
+    "left": "auto",
+    "letter-spacing": "normal",
+    "line-height": "normal",
+    "margin": "0px",
+    "max-height": "none",
+    "max-lines": "none",
+    "max-width": "none",
+    "min-height": "0px",
+    "min-width": "0px",
+    "object-fit": "contain",
+    "object-position": "center",
+    "opacity": "1",
+    "order": "0",
+    "overflow": "visible",
+    "padding": "0px",
+    "perspective": "none",
+    "right": "auto",
+    "rotate": "0deg",
+    "scale": "1",
+    "skew": "0deg",
+    "text-align": "left",
+    "text-decoration": "none",
+    "text-indent": "0px",
+    "text-transform": "none",
+    "top": "auto",
+    "transform": "none",
+    "transition": "all 0.3s ease",
+    "transition-delay": "0s",
+    "transition-duration": "0.3s",
+    "translate": "0px",
+    "visibility": "visible",
+    "white-space": "normal",
+    "width": "auto",
+    "z-index": "1",
+  },  
   cssFixedValueProperties: {
     "position": ["static", "relative", "absolute", "fixed", "sticky", "inherit", "initial", "revert", "revert-layer", "unset"],
     "display": ["block", "inline", "inline-block", "flex", "grid", "inline-flex", "inline-grid", "none", "inherit", "initial", "revert", "revert-layer", "unset"],
@@ -1873,49 +1905,236 @@ function Inspector() {
     </div>
   `;
 
-  const generateRootVariablesSection = () => `
-    <div class="border-0 border-b border-solid pb-2 mb-4 ${project.dark ? "border-gray-800" : "border-gray-200"}">
-      <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize">
-        <button class="${buttonItemClass}" style="color: unset;" onclick="data.rootVarsCollapsed = !data.rootVarsCollapsed">
-          root css variables
-        </button>
+  const processStyles = (stylesObject, selectorPrefix, key, detect = null) => {
+    let styles = '';
+
+    // Regular expression to detect color values
+    const colorRegex = /^(#[0-9a-f]{3,6}|rgba?(.+)|hsla?(.+))$/i;
+    
+    // List of properties that should use a textarea
+    const complexProperties = [
+        'background', 'background-image', 'box-shadow', 'text-shadow',
+        'border', 'border-radius', 'border-image', 'filter', 'transform'
+    ];
+
+    Object.keys(stylesObject).forEach(prop => {
+        let value = stylesObject[prop];
+        let selector = `${selectorPrefix}['${prop}']`;
+
+        // Check if the property has fixed values
+        const predefinedValues = cssFixedValueProperties[prop];
+        if (predefinedValues) {
+            let options = predefinedValues.map(val => 
+                `<option value="${val}" ${val === value ? 'selected' : ''}>${val}</option>`
+            ).join('');
+
+            styles += `
+                <button 
+                    class="${buttonItemClass.split('capitalize').join('')}" 
+                    style="color: unset;" 
+                    onclick="
+                        styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
+                ">
+                    ${prop}
+                </button>
+                <select class="${selectClass}" style="${selectStyle}" onchange="${selector} = this.value; renderPreview(); saveState();">
+                    ${options}
+                </select>`;
+        } else if (cssRangedValueProperties[prop]) {
+          const { min, max, step } = cssRangedValueProperties[prop];
+      
+          // Ensure valueParts and remainingParts are arrays, even if value is null or doesn't match
+          const valueParts = value ? value.match(/-?\d*\.?\d+([a-z%]+|)/g) || [] : [];
+          const remainingParts = value ? value.split(/-?\d*\.?\d+[a-z%]*/g).filter(Boolean) || [] : [];
+      
+          // Determine the appropriate grid column class based on the presence of value parts
+          const gridColsClass = valueParts.length > 0 ? 'grid-cols-2' : 'grid-cols-1';
+      
+          styles += `
+              <button 
+                  class="${buttonItemClass.split('capitalize').join('')}" 
+                  style="color: unset;" 
+                  onclick="
+                      styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
+              ">
+                  ${prop}
+              </button>
+              <div class="grid ${gridColsClass} gap-1 items-center capitalize">`;
+      
+          valueParts.forEach((part, index) => {
+              const numericValue = parseFloat(part);
+              const unitMatch = part.match(/[a-zA-Z%]+/);
+              const unit = unitMatch ? unitMatch[0] : '';
+      
+              // Define valid units based on property
+              let validUnits;
+              switch (prop) {
+                  case 'scale':
+                  case 'rotate':
+                  case 'translate':
+                  case 'perspective':
+                  case 'skew':
+                      validUnits = ['', 'deg', 'rad']; // Example units for transform properties
+                      break;
+                  case 'animation-duration':
+                  case 'transition-duration':
+                      validUnits = ['', 'ms', 's']; // Example units for duration properties
+                      break;
+                  default:
+                      validUnits = ['', 'px', '%', 'rem', 'em', 'vh', 'vw']; // Default units
+                      break;
+              }
+      
+              const selectElement = `<select class="${selectClass}" style="${selectStyle}" onchange="
+                  const valueParts = ${selectorPrefix}['${prop}'].split(' ');
+                  valueParts[${index}] = '${numericValue}' + this.value;
+                  ${selector} = valueParts.join(' ')${remainingParts.length > 0 ? ` + ' ' + '${remainingParts.join(' ')}'` : ''};
+                  renderPreview();
+                  saveState();
+                  ">${validUnits.map(unitOption => 
+                      `<option value="${unitOption}" ${unitOption === unit ? 'selected' : ''}>${unitOption}</option>`
+                  ).join('')}</select>`;
+      
+              const rangeElement = `<input class="${inputClass}" style="${inputStyle}" 
+                  type="range" min="${min}" max="${max}" step="${step}" value="${numericValue}"
+                  oninput="const valueParts = ${selectorPrefix}['${prop}'].split(' ');
+                  valueParts[${index}] = this.value + '${unit}';
+                  ${selector} = valueParts.join(' ')${remainingParts.length > 0 ? ` + ' ' + '${remainingParts.join(' ')}'` : ''};
+                  renderPreview();"
+                  onfocus="saveState();" onblur="saveState();">`;
+      
+              styles += `
+                  <input class="${inputClass}" style="${inputStyle}" 
+                      type="number" min="${min}" max="${max}" step="${step}" value="${numericValue}"
+                      oninput="const valueParts = ${selectorPrefix}['${prop}'].split(' ');
+                      valueParts[${index}] = this.value + '${unit}';
+                      ${selector} = valueParts.join(' ')${remainingParts.length > 0 ? ` + ' ' + '${remainingParts.join(' ')}'` : ''};
+                      renderPreview();"
+                      onfocus="saveState();" onblur="saveState();">
+                  ${prop === 'opacity' || prop === 'z-index' ? rangeElement : selectElement}`;
+          });
+      
+          // Add a backup text input for cases where units aren't defined
+          if (remainingParts.length > 0 || valueParts.length === 0) {
+              styles += `
+                  <input class="${inputClass}" style="${inputStyle}" 
+                      type="text" value="${value}" 
+                      oninput="${selector} = this.value; renderPreview(); saveState();">
+              `;
+          }
+      
+          styles += `</div>`;
+        } else if (complexProperties.includes(prop)) {
+            // Use a textarea for complex multi-line properties
+            styles += `
+                <button 
+                    class="${buttonItemClass.split('capitalize').join('')}" 
+                    style="color: unset;" 
+                    onclick="
+                        styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
+                ">
+                    ${prop}
+                </button>
+                <textarea class="${textareaClass}" style="${textareaStyle}"
+                    oninput="${selector} = this.value; renderPreview(); saveState();">${value}</textarea>`;
+        } else {
+            // Check if the property is a color property
+            const isColorProperty = colorRegex.test(value) || value === null;
+            const inputType = isColorProperty ? 'color' : 'text';
+            const fallbackColor = isColorProperty && value === null ? '#000000' : value;
+
+            // Update the style if the input type is color
+            const updatedInputStyle = inputType === 'color' 
+                ? `${inputStyle} height: 2rem; margin: 0; padding: .25rem; overflow: hidden;` 
+                : inputStyle;
+
+            styles += `
+                <button 
+                    class="${buttonItemClass.split('capitalize').join('')}" 
+                    style="color: unset;" 
+                    onclick="
+                        styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
+                ">
+                    ${prop}
+                </button>
+                <input class="${inputClass}" style="${updatedInputStyle}" type="${inputType}" value="${fallbackColor}" 
+                    oninput="${selector} = this.value; renderPreview(); saveState();">`;
+        }
+    });
+
+    return styles;
+  };
+
+  const generateRootVariablesSection = () => {
+    let styles = '';
+    
+    // Regular expression to detect color values
+    const colorRegex = /^(#[0-9a-f]{3,6}|rgba?(.+)|hsla?(.+))$/i;
+
+    // Iterate over each root variable
+    Object.keys(project.css.rootVariables).forEach(key => {
+      const value = project.css.rootVariables[key];
+      const selector = `project.css.rootVariables['${key}']`;
+
+      // Determine input type based on value
+      const isColor = colorRegex.test(value);
+      const hasAlpha = value.includes('rgba') || value.includes('hsla');
+      const isNumeric = !isNaN(parseFloat(value)) && isFinite(value);
+
+      let inputType = 'text';
+      let inputStyle = 'height: auto; margin: 0; padding: .4rem;';
+
+      if (isNumeric) {
+        inputType = 'number';
+      } else if (isColor && !hasAlpha) {
+        inputType = 'color';
+        inputStyle = 'height: 2rem; margin: 0; padding: .25rem; overflow: hidden;';
+      }
+
+      // Use processStyles function to generate styles for root variables
+      styles += `
         <button 
-          class="${buttonAddItemClass}" 
+          class="${buttonItemClass.split('capitalize').join('')}" 
           style="color: unset;" 
-          onclick="
-            const id = generateId();
-            project.css.rootVariables[id] = '';
-          ">
-          <svg class="w-3" viewBox="0 0 576 512" style="color: unset;">
-            <path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path>
-          </svg>
+          onclick="modifyRootVariable('${key}')">
+          ${key}
         </button>
-      </div>
-      <div class="grid grid-cols-1 gap-1 items-center py-2 ${data.rootVarsCollapsed ? 'hidden' : ''}">
+        <input 
+          class="${inputClass}"
+          style="${inputStyle}" 
+          type="${inputType}" 
+          value="${value}" 
+          oninput="${selector} = this.value; renderPreview();" 
+          onfocus="saveState()" 
+          onblur="saveState()"
+        />
+      `;
+    });
+
+    return `
+      <div class="border-0 border-b border-solid pb-2 mb-4 ${project.dark ? "border-gray-800" : "border-gray-200"}">
         <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize">
-          ${Object.keys(project.css.rootVariables).map(key => `
-            <button 
-              class="${buttonItemClass.split('capitalize').join('')}" 
-              style="color: unset;" 
-              onclick="modifyRootVariable('${key}')">
-              ${key}
-            </button>
-            <input 
-              class="${inputClass}" 
-              style="height: auto; margin: 0; padding: .4rem;" 
-              type="text" 
-              value="${project.css.rootVariables[key]}" 
-              oninput="
-                project.css.rootVariables['${key}'] = this.value;
-                renderPreview();
-              " 
-              onfocus="saveState()" onblur="saveState()"
-            />
-          `).join('')}
+          <button class="${buttonItemClass}" style="color: unset;" onclick="data.rootVarsCollapsed = !data.rootVarsCollapsed">
+            root css variables
+          </button>
+          <button 
+            class="${buttonAddItemClass}" 
+            style="color: unset;" 
+            onclick="
+              const id = '--' + generateId();
+              project.css.rootVariables[id] = '';
+            ">
+            <svg class="w-3" viewBox="0 0 576 512" style="color: unset;">
+              <path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="grid grid-cols-2 gap-1 items-center py-2 ${data.rootVarsCollapsed ? 'hidden' : ''}">
+          ${styles}
         </div>
       </div>
-    </div>
-  `;
+    `;
+  };
 
   const generateStylesSection = () => {
     if (!commonLayerTag) data.stylesTarget = null;
@@ -2028,130 +2247,6 @@ function Inspector() {
     </div>
   </div>`;
   };
-
-  const processStyles = (stylesObject, selectorPrefix, key, detect = null) => {
-    let styles = '';
-
-    // Regular expression to detect color values
-    const colorRegex = /^(#[0-9a-f]{3,6}|rgba?(.+)|hsla?(.+))$/i;
-    
-    // List of properties that should use a textarea
-    const complexProperties = [
-        'background', 'background-image', 'box-shadow', 'text-shadow',
-        'border', 'border-radius', 'border-image', 'filter', 'transform'
-    ];
-
-    Object.keys(stylesObject).forEach(prop => {
-        let value = stylesObject[prop];
-        let selector = `${selectorPrefix}['${prop}']`;
-
-        // Check if the property has fixed values
-        const predefinedValues = cssFixedValueProperties[prop];
-        if (predefinedValues) {
-            let options = predefinedValues.map(val => 
-                `<option value="${val}" ${val === value ? 'selected' : ''}>${val}</option>`
-            ).join('');
-
-            styles += `
-                <button 
-                    class="${buttonItemClass.split('capitalize').join('')}" 
-                    style="color: unset;" 
-                    onclick="
-                        styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
-                ">
-                    ${prop}
-                </button>
-                <select class="${selectClass}" style="${selectStyle}" onchange="${selector} = this.value; renderPreview(); saveState();">
-                    ${options}
-                </select>`;
-        } else if (cssRangedValueProperties[prop]) {
-            const { min, max, step } = cssRangedValueProperties[prop];
-            const valueParts = value ? value.split(' ') : [];
-            const units = valueParts.map(part => part.match(/[a-zA-Z%]+/) || '');
-
-            styles += `
-                <button 
-                    class="${buttonItemClass.split('capitalize').join('')}" 
-                    style="color: unset;" 
-                    onclick="
-                        styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
-                ">
-                    ${prop}
-                </button>
-                <div class="grid grid-cols-2 gap-1 items-center capitalize">`;
-
-            valueParts.forEach((part, index) => {
-                const numericValue = parseFloat(part);
-                const selectElement = `<select class="${selectClass}" style="${selectStyle}" onchange="
-                    const valueParts = ${selectorPrefix}['${prop}'].split(' ');
-                    valueParts[${index}] = '${numericValue}' + this.value;
-                    ${selector} = valueParts.join(' ');
-                    renderPreview();
-                    saveState();
-                    ">${['px', '%', 'rem', 'em', 'vh', 'vw'].map(unit => 
-                        `<option value="${unit}" ${unit === units[index] ? 'selected' : ''}>${unit}</option>`
-                    ).join('')}</select>`;
-
-                const rangeElement = `<input class="${inputClass}" style="${inputStyle}" 
-                    type="range" min="${min}" max="${max}" step="${step}" value="${numericValue}"
-                    oninput="const valueParts = ${selectorPrefix}['${prop}'].split(' ');
-                    valueParts[${index}] = this.value + '${units[index]}';
-                    ${selector} = valueParts.join(' ');
-                    renderPreview();"
-                    onfocus="saveState();" onblur="saveState();">`;
-
-                styles += `
-                    <input class="${inputClass}" style="${inputStyle}" 
-                        type="number" min="${min}" max="${max}" step="${step}" value="${numericValue}"
-                        oninput="const valueParts = ${selectorPrefix}['${prop}'].split(' ');
-                        valueParts[${index}] = this.value + '${units[index]}';
-                        ${selector} = valueParts.join(' ');
-                        renderPreview();"
-                        onfocus="saveState();" onblur="saveState();">
-                    ${prop === 'opacity' || prop === 'z-index' ? rangeElement : selectElement}`;
-            });
-
-            styles += `</div>`;
-        } else if (complexProperties.includes(prop)) {
-            // Use a textarea for complex multi-line properties
-            styles += `
-                <button 
-                    class="${buttonItemClass.split('capitalize').join('')}" 
-                    style="color: unset;" 
-                    onclick="
-                        styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
-                ">
-                    ${prop}
-                </button>
-                <textarea class="${textareaClass}" style="${textareaStyle}"
-                    oninput="${selector} = this.value; renderPreview(); saveState();">${value}</textarea>`;
-        } else {
-            // Check if the property is a color property
-            const isColorProperty = colorRegex.test(value) || value === null;
-            const inputType = isColorProperty ? 'color' : 'text';
-            const fallbackColor = isColorProperty && value === null ? '#000000' : value;
-
-            // Update the style if the input type is color
-            const updatedInputStyle = inputType === 'color' 
-                ? `${inputStyle} height: 2rem; margin: 0; padding: .25rem; overflow: hidden;` 
-                : inputStyle;
-
-            styles += `
-                <button 
-                    class="${buttonItemClass.split('capitalize').join('')}" 
-                    style="color: unset;" 
-                    onclick="
-                        styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
-                ">
-                    ${prop}
-                </button>
-                <input class="${inputClass}" style="${updatedInputStyle}" type="${inputType}" value="${fallbackColor}" 
-                    oninput="${selector} = this.value; renderPreview(); saveState();">`;
-        }
-    });
-
-    return styles;
-};
 
   const generateBreakpointsSection = () => {
     if (!commonLayerTag) data.stylesTarget = null;
@@ -3629,7 +3724,11 @@ function modifyRootVariable(id) {
       name = name.charAt(0).toLowerCase() + name.slice(1);
 
       if (name) {
-        let newName = "--" + name;
+        if (!name.startsWith('--')) {
+          name = '--' + name;
+        }
+        // Convert the first character after '--' to lowercase
+        let newName = name.substring(0, 2) + name.charAt(2).toLowerCase() + name.slice(3);
         
         if (project.css.rootVariables[newName]) {
           Modal.render({
@@ -3824,6 +3923,15 @@ function addStylePropModal(id, obj) {
         properties.forEach(propertyType => {
           const defaultValue = defaultValues[propertyType] || defaultValues['default'];
           const finalValue = unit ? `${defaultValue}${unit}` : defaultValue;
+
+          // Detect if it already exists
+          if (obj[propertyType]) {
+            Modal.render({
+              title: "Unable to add property!",
+              content: '<div class="p-4 text-center">Property style already exists</div>'
+            });
+            return false;
+          }
 
           if (noUnit.includes(propertyType)) {
             obj[propertyType] = "1";
