@@ -119,7 +119,10 @@ let d = {
     'animation': 'none',
     'clip': 'auto',
     'max-lines': 'none',
-    'default': '10px', // A generic default value for other cases
+    'color': '#000000',
+    'background': '#000000',
+    'background-color': '#000000',
+    'default': '', // A generic default value for other cases
   },
   cssFixedValueProperties: {
     "position": ["static", "relative", "absolute", "fixed", "sticky", "inherit", "initial", "revert", "revert-layer", "unset"],
@@ -202,6 +205,7 @@ let d = {
     "columns": { min: 1, max: Infinity, step: 1 },
     "column-count": { min: 1, max: Infinity, step: 1 },
     "column-width": { min: 0, max: Infinity, step: 1 },
+    "font-size": { min: 0, max: 1, step: 0.01 },
     "font-size-adjust": { min: 0, max: 1, step: 0.01 },
     "letter-spacing": { min: -Infinity, max: Infinity, step: 0.1 },
     "word-spacing": { min: -Infinity, max: Infinity, step: 0.1 },
@@ -925,6 +929,19 @@ function Menu() {
                     <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
                   </svg>
                   <span>share to codepen</span>
+                </button>
+              </li>
+              <li class="p-0 list-none">
+                <button 
+                  aria-label="Empty storage saved from Polyrise"
+                  name="Empty storage saved from Polyrise"
+                  class="w-full flex gap-2 text-sm capitalize border-0 p-2 rounded-md bg-transparent" 
+                  style="color: unset;" 
+                  onclick="emptyStorage()">
+                  <svg class="h-5 w-5" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
+                    <path d="M566.6 54.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192-34.7-34.7c-4.2-4.2-10-6.6-16-6.6c-12.5 0-22.6 10.1-22.6 22.6l0 29.1L364.3 320l29.1 0c12.5 0 22.6-10.1 22.6-22.6c0-6-2.4-11.8-6.6-16l-34.7-34.7 192-192zM341.1 353.4L222.6 234.9c-42.7-3.7-85.2 11.7-115.8 42.3l-8 8C76.5 307.5 64 337.7 64 369.2c0 6.8 7.1 11.2 13.2 8.2l51.1-25.5c5-2.5 9.5 4.1 5.4 7.9L7.3 473.4C2.7 477.6 0 483.6 0 489.9C0 502.1 9.9 512 22.1 512l173.3 0c38.8 0 75.9-15.4 103.4-42.8c30.6-30.6 45.9-73.1 42.3-115.8z"/>
+                  </svg>
+                  <span>empty storage</span>
                 </button>
               </li>
             </ul>`;
@@ -1874,13 +1891,13 @@ function Inspector() {
           </svg>
         </button>
       </div>
-      <div class="grid grid-cols-1 gap-1 items-center py-2 capitalize ${data.rootVarsCollapsed ? 'hidden' : ''}">
+      <div class="grid grid-cols-1 gap-1 items-center py-2 ${data.rootVarsCollapsed ? 'hidden' : ''}">
         <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize">
           ${Object.keys(project.css.rootVariables).map(key => `
             <button 
               class="${buttonItemClass.split('capitalize').join('')}" 
               style="color: unset;" 
-              onclick="renameRootVariable('${key}')">
+              onclick="modifyRootVariable('${key}')">
               ${key}
             </button>
             <input 
@@ -1975,7 +1992,7 @@ function Inspector() {
       ${data.stylesTarget ? `<div class="grid grid-cols-1 gap-1 items-center py-2">
         ${dropdown}
       </div>` : ''}
-      <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize">
+      <div class="grid grid-cols-2 gap-1 items-center py-2">
         ${styles}
       </div>
       ${data.stylesTarget ? `<div class="grid grid-cols-2 gap-1 items-center pb-2 capitalize">
@@ -2015,94 +2032,126 @@ function Inspector() {
   const processStyles = (stylesObject, selectorPrefix, key, detect = null) => {
     let styles = '';
 
+    // Regular expression to detect color values
+    const colorRegex = /^(#[0-9a-f]{3,6}|rgba?(.+)|hsla?(.+))$/i;
+    
+    // List of properties that should use a textarea
+    const complexProperties = [
+        'background', 'background-image', 'box-shadow', 'text-shadow',
+        'border', 'border-radius', 'border-image', 'filter', 'transform'
+    ];
+
     Object.keys(stylesObject).forEach(prop => {
-      let value = stylesObject[prop];
-      let selector = `${selectorPrefix}['${prop}']`;
+        let value = stylesObject[prop];
+        let selector = `${selectorPrefix}['${prop}']`;
 
-      // Check if the property has fixed values
-      const predefinedValues = cssFixedValueProperties[prop];
-      if (predefinedValues) {
-        let options = predefinedValues.map(val => 
-          `<option value="${val}" ${val === value ? 'selected' : ''}>${val}</option>`
-        ).join('');
+        // Check if the property has fixed values
+        const predefinedValues = cssFixedValueProperties[prop];
+        if (predefinedValues) {
+            let options = predefinedValues.map(val => 
+                `<option value="${val}" ${val === value ? 'selected' : ''}>${val}</option>`
+            ).join('');
 
-        styles += `
-          <button 
-            class="${buttonItemClass}" 
-            style="color: unset;" 
-            onclick="
-              styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
-          ">
-            ${prop}
-          </button>
-          <select class="${selectClass}" style="${selectStyle}" onchange="${selector} = this.value; renderPreview(); saveState();">
-            ${options}
-          </select>`;
-      } else if (cssRangedValueProperties[prop]) {
-        const { min, max, step } = cssRangedValueProperties[prop];
-        const valueParts = value.split(' ');
-        const units = valueParts.map(part => part.match(/[a-zA-Z%]+/) || '');
+            styles += `
+                <button 
+                    class="${buttonItemClass.split('capitalize').join('')}" 
+                    style="color: unset;" 
+                    onclick="
+                        styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
+                ">
+                    ${prop}
+                </button>
+                <select class="${selectClass}" style="${selectStyle}" onchange="${selector} = this.value; renderPreview(); saveState();">
+                    ${options}
+                </select>`;
+        } else if (cssRangedValueProperties[prop]) {
+            const { min, max, step } = cssRangedValueProperties[prop];
+            const valueParts = value ? value.split(' ') : [];
+            const units = valueParts.map(part => part.match(/[a-zA-Z%]+/) || '');
 
-        styles += `
-          <button 
-            class="${buttonItemClass}" 
-            style="color: unset;" 
-            onclick="
-              styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
-          ">
-            ${prop}
-          </button>
-          <div class="grid grid-cols-2 gap-1 items-center capitalize">`;
+            styles += `
+                <button 
+                    class="${buttonItemClass.split('capitalize').join('')}" 
+                    style="color: unset;" 
+                    onclick="
+                        styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
+                ">
+                    ${prop}
+                </button>
+                <div class="grid grid-cols-2 gap-1 items-center capitalize">`;
 
-        valueParts.forEach((part, index) => {
-          const numericValue = parseFloat(part);
-          const selectElement = `<select class="${selectClass}" style="${selectStyle}" onchange="
-              const valueParts = ${selectorPrefix}['${prop}'].split(' ');
-              valueParts[${index}] = '${numericValue}' + this.value;
-              ${selector} = valueParts.join(' ');
-              renderPreview();
-              saveState();
-            ">${['px', '%', 'rem', 'em', 'vh', 'vw'].map(unit => 
-              `<option value="${unit}" ${unit === units[index] ? 'selected' : ''}>${unit}</option>`
-            ).join('')}</select>`;
+            valueParts.forEach((part, index) => {
+                const numericValue = parseFloat(part);
+                const selectElement = `<select class="${selectClass}" style="${selectStyle}" onchange="
+                    const valueParts = ${selectorPrefix}['${prop}'].split(' ');
+                    valueParts[${index}] = '${numericValue}' + this.value;
+                    ${selector} = valueParts.join(' ');
+                    renderPreview();
+                    saveState();
+                    ">${['px', '%', 'rem', 'em', 'vh', 'vw'].map(unit => 
+                        `<option value="${unit}" ${unit === units[index] ? 'selected' : ''}>${unit}</option>`
+                    ).join('')}</select>`;
 
-          const rangeElement = `<input class="${inputClass}" style="${inputStyle}" 
-              type="range" min="${min}" max="${max}" step="${step}" value="${numericValue}"
-              oninput="const valueParts = ${selectorPrefix}['${prop}'].split(' ');
-              valueParts[${index}] = this.value + '${units[index]}';
-              ${selector} = valueParts.join(' ');
-              renderPreview();"
-              onfocus="saveState();" onblur="saveState();">`;
+                const rangeElement = `<input class="${inputClass}" style="${inputStyle}" 
+                    type="range" min="${min}" max="${max}" step="${step}" value="${numericValue}"
+                    oninput="const valueParts = ${selectorPrefix}['${prop}'].split(' ');
+                    valueParts[${index}] = this.value + '${units[index]}';
+                    ${selector} = valueParts.join(' ');
+                    renderPreview();"
+                    onfocus="saveState();" onblur="saveState();">`;
 
-          styles += `
-            <input class="${inputClass}" style="${inputStyle}" 
-              type="number" min="${min}" max="${max}" step="${step}" value="${numericValue}"
-              oninput="const valueParts = ${selectorPrefix}['${prop}'].split(' ');
-              valueParts[${index}] = this.value + '${units[index]}';
-              ${selector} = valueParts.join(' ');
-              renderPreview();"
-              onfocus="saveState();" onblur="saveState();">
-            ${prop === 'opacity' || prop === 'z-index' ? rangeElement : selectElement}`;
-        });
+                styles += `
+                    <input class="${inputClass}" style="${inputStyle}" 
+                        type="number" min="${min}" max="${max}" step="${step}" value="${numericValue}"
+                        oninput="const valueParts = ${selectorPrefix}['${prop}'].split(' ');
+                        valueParts[${index}] = this.value + '${units[index]}';
+                        ${selector} = valueParts.join(' ');
+                        renderPreview();"
+                        onfocus="saveState();" onblur="saveState();">
+                    ${prop === 'opacity' || prop === 'z-index' ? rangeElement : selectElement}`;
+            });
 
-        styles += `</div>`;
-      } else {
-        styles += `
-          <button 
-            class="${buttonItemClass}" 
-            style="color: unset;" 
-            onclick="
-              styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
-          ">
-            ${prop}
-          </button>
-          <input class="${inputClass}" style="${inputStyle}" type="text" value="${value}" 
-            oninput="${selector} = this.value; renderPreview(); saveState();">`;
-      }
+            styles += `</div>`;
+        } else if (complexProperties.includes(prop)) {
+            // Use a textarea for complex multi-line properties
+            styles += `
+                <button 
+                    class="${buttonItemClass.split('capitalize').join('')}" 
+                    style="color: unset;" 
+                    onclick="
+                        styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
+                ">
+                    ${prop}
+                </button>
+                <textarea class="${textareaClass}" style="${textareaStyle}"
+                    oninput="${selector} = this.value; renderPreview(); saveState();">${value}</textarea>`;
+        } else {
+            // Check if the property is a color property
+            const isColorProperty = colorRegex.test(value) || value === null;
+            const inputType = isColorProperty ? 'color' : 'text';
+            const fallbackColor = isColorProperty && value === null ? '#000000' : value;
+
+            // Update the style if the input type is color
+            const updatedInputStyle = inputType === 'color' 
+                ? `${inputStyle} height: 2rem; margin: 0; padding: .25rem; overflow: hidden;` 
+                : inputStyle;
+
+            styles += `
+                <button 
+                    class="${buttonItemClass.split('capitalize').join('')}" 
+                    style="color: unset;" 
+                    onclick="
+                        styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
+                ">
+                    ${prop}
+                </button>
+                <input class="${inputClass}" style="${updatedInputStyle}" type="${inputType}" value="${fallbackColor}" 
+                    oninput="${selector} = this.value; renderPreview(); saveState();">`;
+        }
     });
 
     return styles;
-  };
+};
 
   const generateBreakpointsSection = () => {
     if (!commonLayerTag) data.stylesTarget = null;
@@ -3289,43 +3338,49 @@ const App = {
 }
 window.App = App;
 function emptyStorage() {
-  // Clear local storage
-  localStorage.removeItem('Polyrise');
-
-  // Clear session storage specific to Polyrise (if you use a specific key)
-  sessionStorage.removeItem('Polyrise');
-
-  // Clear cookies specific to Polyrise
-  document.cookie.split(";").forEach(function(c) {
-    if (c.trim().startsWith('Polyrise')) {
-      document.cookie = c.trim().split("=")[0] + 
-                        '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+  Modal.render({
+    title: "Are you sure you want to empty storage?",
+    content: '<div class="p-4 text-center">All current data will be lost.</div>',
+    onConfirm() {
+      // Clear local storage
+      localStorage.removeItem('Polyrise');
+    
+      // Clear session storage specific to Polyrise (if you use a specific key)
+      sessionStorage.removeItem('Polyrise');
+    
+      // Clear cookies specific to Polyrise
+      document.cookie.split(";").forEach(function(c) {
+        if (c.trim().startsWith('Polyrise')) {
+          document.cookie = c.trim().split("=")[0] + 
+                            '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+        }
+      });
+    
+      // Clear service worker caches specific to Polyrise
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          names.forEach(function(name) {
+            if (name === 'Polyrise-cache') {
+              caches.delete(name);
+            }
+          });
+        });
+      }
+    
+      // Unregister service workers specific to Polyrise
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          registrations.forEach(function(registration) {
+            if (registration.scope.includes('Polyrise')) {
+              registration.unregister();
+            }
+          });
+        });
+      }
+    
+      location.reload();
     }
   });
-
-  // Clear service worker caches specific to Polyrise
-  if ('caches' in window) {
-    caches.keys().then(function(names) {
-      names.forEach(function(name) {
-        if (name === 'Polyrise-cache') {
-          caches.delete(name);
-        }
-      });
-    });
-  }
-
-  // Unregister service workers specific to Polyrise
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-      registrations.forEach(function(registration) {
-        if (registration.scope.includes('Polyrise')) {
-          registration.unregister();
-        }
-      });
-    });
-  }
-
-  location.reload();
 }
 function updateVersionPart(part, value) {
   const versionParts = project.version.split('.');
@@ -3503,39 +3558,80 @@ function commandPalette() {
 }
 
 // Inspector functions
-function renameRootVariable(id) {
-  let modalContent = `<div class="p-4 text-center grid grid-cols-1 gap-4">
-    <input id="m7t85jokv" type="text" placeholder="-- added automatically" onkeydown="
-        if (event.key === 'Enter') {
-          document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
-        }
-      ">
-      <button 
-        class="w-full border-red-400 text-red-400 rounded-md py-2 mt-4 bg-transparent font-thin" 
-        onclick="
-          saveState();
-          delete project.css.rootVariables['${id}']; 
-          localStorage.setItem('Polyrise', JSON.stringify(project));
-          saveState();
-          App.render('#app');
-          renderPreview();
-          document.querySelector('dialog[open]').querySelector('header > button:last-child').onclick();
-        ">
+function modifyRootVariable(id) {
+  let modalContent = `<div class="p-4grid grid-cols-1 gap-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <div class="mb-2 text-left">Name: </div>
+          <input 
+            id="m7t85jokv" 
+            type="text" 
+            value="${id}" 
+            placeholder="-- added automatically" 
+            onkeydown="
+              if (event.key === 'Enter') {
+                document.getElementById('hbo1luvti').focus();
+              }
+          ">
+        </div>
+        <div>
+          <div class="mb-2 text-right">Value: </div>
+          <input 
+            id="hbo1luvti" 
+            type="text" 
+            value="${project.css.rootVariables[id]}" 
+            placeholder="variable value" 
+            onkeydown="
+            if (event.key === 'Enter') {
+              document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
+            }
+          ">
+          <select 
+            id="c15au9cn8" 
+            onchange="
+              document.getElementById('hbo1luvti').setAttribute('type', this.value);
+            "
+          >
+            <option value="text">text</option>
+            <option value="number">number</option>
+            <option value="color">color</option>
+          </select>
+        </div>
+      </div>
+      <div class="text-center">
+        <button 
+          class="w-full border-red-400 text-red-400 rounded-md py-2 mt-4 bg-transparent font-thin" 
+          onclick="
+            saveState();
+            delete project.css.rootVariables['${id}']; 
+            localStorage.setItem('Polyrise', JSON.stringify(project));
+            saveState();
+            App.render('#app');
+            renderPreview();
+            document.querySelector('dialog[open]').querySelector('header > button:last-child').onclick();
+          ">
           Delete Variable
         </button>
-  </div>`;
+      </div>
+    </div>`;
 
   Modal.render({
     title: `Are you sure you want to rename the "${id.substring(2)}" root variable?`,
     content: modalContent,
     onLoad() {
       document.getElementById('m7t85jokv').focus();
+      document.getElementById('m7t85jokv').select();
     },
     onConfirm() {
-      let value = document.getElementById('m7t85jokv').value;
-      if (value) {
-        let val = "--" + value;
-        if (project.css.rootVariables[val]) {
+      let newValue = document.getElementById('hbo1luvti').value;
+      let name = document.getElementById('m7t85jokv').value;
+      // Convert the first character to lowercase
+      name = name.charAt(0).toLowerCase() + name.slice(1);
+
+      if (name) {
+        let newName = "--" + name;
+        
+        if (project.css.rootVariables[newName]) {
           Modal.render({
             title: `Unable to rename variable!`,
             content: "Variable name already exists!"
@@ -3544,8 +3640,11 @@ function renameRootVariable(id) {
           saveState();
 
           // Clone the style object
-          project.css.rootVariables[val] = JSON.parse(JSON.stringify(project.css.rootVariables[`${id}`]));
+          project.css.rootVariables[newName] = JSON.parse(JSON.stringify(project.css.rootVariables[`${id}`]));
   
+          // Update the variable with the new value
+          project.css.rootVariables[newName] = newValue; // Assign the new value to the variable
+
           // Now delete the old style object
           delete project.css.rootVariables[`${id}`];
           localStorage.setItem('Polyrise', JSON.stringify(project));
@@ -3586,8 +3685,11 @@ function addStyle() {
       document.getElementById('vvrh9nxwk').select();
     },
     onConfirm() {
-      const value = document.getElementById('vvrh9nxwk').value;
+      let value = document.getElementById('vvrh9nxwk').value;
       if (value) {
+        // Convert the first character to lowercase
+        value = value.charAt(0).toLowerCase() + value.slice(1);
+        
         let obj = project.css.styles;
         if (data.breakpointKey && data.stylesTarget) {
           obj = project.css.breakpoints[`${data.breakpointKey}px`];
@@ -3714,7 +3816,10 @@ function addStylePropModal(id, obj) {
       const noUnit = ['opacity', 'z-index'];
 
       if (propertyTypeInput) {
-        const properties = propertyTypeInput.split(',').map(prop => prop.trim());
+        // Convert the first character to lowercase
+        const formattedPropertyType = propertyTypeInput.charAt(0).toLowerCase() + propertyTypeInput.slice(1);
+
+        const properties = formattedPropertyType.split(',').map(prop => prop.trim());
 
         properties.forEach(propertyType => {
           const defaultValue = defaultValues[propertyType] || defaultValues['default'];
@@ -3756,8 +3861,11 @@ function renameStyleTarget(target) {
       document.getElementById('lnjvy3iz2').focus();
     },
     onConfirm() {
-      const value = document.getElementById('lnjvy3iz2').value;
+      let value = document.getElementById('lnjvy3iz2').value;
       if (value) {
+        // Convert the first character to lowercase
+        value = value.charAt(0).toLowerCase() + value.slice(1);
+        
         if (project.css.styles[value]) {
           Modal.render({
             title: `Unable to add style!`,
@@ -3944,8 +4052,10 @@ function addAnimation() {
       document.getElementById('vvrh9nxwk').focus();
     },
     onConfirm() {
-      const value = document.getElementById('vvrh9nxwk').value;
+      let value = document.getElementById('vvrh9nxwk').value;
       if (value) {
+        // Convert the first character to lowercase
+        value = value.charAt(0).toLowerCase() + value.slice(1);
         if (project.css.animations[`${value}`]) {
           Modal.render({
             title: `Unable to add animation!`,
@@ -4193,7 +4303,7 @@ function deleteStyleProp(id, prop, e, detect = null) {
     obj = project.css.styles[id][data.stylesPropTarget];
   }
   // Delete the property
-  if (obj[prop]) delete obj[prop];
+  if (obj[`${prop}`]) delete obj[`${prop}`];
   saveState();
 
   // Remove the modal
@@ -4234,33 +4344,14 @@ function clearStyles(layers, query, callback) {
 }
 function styleModal(id, prop, currentValue, detect = null) {
   const cssFixedValueProperties = data.cssFixedValueProperties;
-  const cssRangedValueProperties = data.cssRangedValueProperties;
 
   let detected = null;
   if (detect) detected = detect;
 
   // Initialize the modal content based on the property type
   let modalContent = '';
-  const valueParts = currentValue.split(' ');
 
-  if (cssRangedValueProperties[prop]) {
-    // Handle numeric values with unit selection
-    const { min, max, step } = cssRangedValueProperties[prop];
-
-    modalContent = `
-      <div class="p-4">
-        <label class="block mb-2">Current Value: ${currentValue}</label>
-        <input class="w-full rounded-md capitalize text-[.6rem]" 
-               type="number" min="${min}" max="${max}" step="${step}" value="${valueParts[0]}"
-               id="new-value"
-               placeholder="Enter new value" />
-        <select class="w-full mt-2 rounded-md capitalize text-[.6rem]" id="new-unit">
-          ${['px', '%', 'rem', 'em', 'vh', 'vw'].map(unit => `
-            <option value="${unit}" ${unit === (valueParts[1] || '') ? 'selected' : ''}>${unit}</option>
-          `).join('')}
-        </select>
-      </div>`;
-  } else if (cssFixedValueProperties[prop]) {
+  if (cssFixedValueProperties[prop]) {
     // Handle fixed values
     const options = cssFixedValueProperties[prop].map(val => `
       <option value="${val}" ${val === currentValue ? 'selected' : ''}>${val}</option>
@@ -4269,16 +4360,16 @@ function styleModal(id, prop, currentValue, detect = null) {
     modalContent = `
       <div class="p-4">
         <label class="block mb-2">Current Value: ${currentValue}</label>
-        <select class="w-full rounded-md capitalize text-[.6rem]" id="new-value">
+        <select class="w-full rounded-md text-[.6rem]" id="new-value">
           ${options}
         </select>
       </div>`;
   } else {
-    // Handle other types of properties (e.g., text)
+    // Handle other types of properties (e.g., text) with a single input
     modalContent = `
       <div class="p-4">
         <label class="block mb-2">Current Value: ${currentValue}</label>
-        <input class="w-full rounded-md capitalize text-[.6rem]" 
+        <input id="new-prop-value" class="w-full rounded-md text-[.6rem]" 
                type="text" value="${currentValue}" id="new-value"
                placeholder="Enter new value" />
       </div>`;
@@ -4295,13 +4386,17 @@ function styleModal(id, prop, currentValue, detect = null) {
   Modal.render({
     title: `Modify "${prop}" Style`,
     content: modalContent,
+    onLoad() {
+      if (document.getElementById('new-prop-value')) {
+        const input = document.getElementById('new-prop-value');
+        input.focus();
+      }
+    },
     onConfirm() {
       saveState();
 
       // Get the new value from the modal
       const newValue = document.getElementById('new-value').value;
-      const newUnit = document.getElementById('new-unit') ? document.getElementById('new-unit').value : '';
-      const finalValue = newUnit ? `${newValue}${newUnit}` : newValue;
 
       let obj = null;
       if (detect) {
@@ -4317,22 +4412,22 @@ function styleModal(id, prop, currentValue, detect = null) {
         }
       } else {
         if (data.stylesPropTarget) {
-          obj = project.css[id][data.stylesPropTarget];
+          obj = project.css.styles[id][data.stylesPropTarget];
         }
       }
 
       // Update or delete the style
-      if (finalValue === '') {
+      if (newValue === '') {
         // Delete the property if empty
         delete obj[prop];
       } else {
         // Update the property with the new value
-        obj[prop] = finalValue;
+        obj[prop] = newValue;
       }
 
+      saveState();
       App.render("#app");
       renderPreview();
-      saveState();
     }
   });
 }
@@ -6765,7 +6860,6 @@ function fileToBase64(file) {
 }
 function importJSON(obj) {
   if (obj === null) return;
-  const clone = { ...obj };
   project.name = obj.name;
   project.version = obj.version;
   project.title = obj.title;
@@ -6786,11 +6880,202 @@ function importJSON(obj) {
   project.html = obj.html;
 }
 function newProject() {
+  const obj = {
+    name: "App name",
+    version: "0.0.1",
+    title: "An attractive title",
+    description: "The most attractive description ever!",
+    author: "Polyrise",
+    url: "https://michaelsboost.com/",
+    meta: "",
+    libraries: [],
+    css: {
+      "rootVariables": {},
+      "styles": {},
+      "animations": {},
+      "breakpoints": {}
+    },
+    components: [],
+    html: [],
+    logo: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhLS0gQ3JlYXRlZCB3aXRoIElua3NjYXBlIChodHRwOi8vd3d3Lmlua3NjYXBlLm9yZy8pIC0tPgoKPHN2ZwogICB3aWR0aD0iNTEyIgogICBoZWlnaHQ9IjUxMiIKICAgdmlld0JveD0iMCAwIDEzNS40NjY2NiAxMzUuNDY2NjciCiAgIHZlcnNpb249IjEuMSIKICAgaWQ9InN2ZzEiCiAgIHhtbDpzcGFjZT0icHJlc2VydmUiCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM6c3ZnPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnMKICAgICBpZD0iZGVmczEiIC8+PGcKICAgICBpZD0iZzI0Ij48cGF0aAogICAgICAgaWQ9InBhdGgyMiIKICAgICAgIHN0eWxlPSJkaXNwbGF5OmlubGluZTtmaWxsOiMxMzNhZDQ7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlLXdpZHRoOjk2LjE3NDtzdHJva2UtbGluZWNhcDpyb3VuZDtzdHJva2UtbGluZWpvaW46cm91bmQiCiAgICAgICBkPSJNIDkuNTgyODc3NSw2Ny43MzMzMzIgViAxMzUuMjAwNTMgTCAyNS4zODc1OTcsMTI2LjAzMTA3IFYgMTA2Ljk2MDQgNjcuNzMzMzMyIFogbSA4NS45Njg5MTE1LDAgLTU3Ljc2OTA4MywzMi4yOTcyNTggdiAxOC44MTA3MyBMIDEyNS44ODIyNCw2Ny43MzMzMzIgWiIgLz48cGF0aAogICAgICAgc3R5bGU9ImRpc3BsYXk6aW5saW5lO2ZpbGw6IzA0YTJmZjtmaWxsLW9wYWNpdHk6MTtzdHJva2Utd2lkdGg6MTQ7c3Ryb2tlLWxpbmVjYXA6cm91bmQ7c3Ryb2tlLWxpbmVqb2luOnJvdW5kIgogICAgICAgaWQ9InBhdGgyMyIKICAgICAgIGQ9Im0gNDkuNTY4NTI3LDM1LjgxOTU1MyAtMTYuOTcwNDc4LDkuNzk3OTEgMCwtMTkuNTk1ODIgeiIKICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDIuMjE3MjY1MiwwLDAsMi4xNDcwMjkzLC0zNC40OTUyNjksLTkuMjYyMTYyKSIgLz48cGF0aAogICAgICAgaWQ9InBhdGgyNCIKICAgICAgIHN0eWxlPSJkaXNwbGF5OmlubGluZTtmaWxsOiM4NjAwZWY7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlLXdpZHRoOjk2LjE3NDtzdHJva2UtbGluZWNhcDpyb3VuZDtzdHJva2UtbGluZWpvaW46cm91bmQiCiAgICAgICBkPSJNIDkuNTgyODc3NSwwLjI2NjEzMzYyIFYgNjcuNzMzMzMyIEggMjUuMzg3NTk3IFYgNDIuODU2ODE1IDI4LjMyNjk1MyBsIDcwLjMyNTkzOSwzOS4zMTU5NDYgLTAuMTYxNzQ3LDAuMDkwNDMgaCAzMC4zMzA0NTEgbCAwLjAwMiwtMC4wMDEgeiIgLz48L2c+PC9zdmc+Cg==",
+    lang: "en",
+    dark: true,
+    previewDark: true,
+    pwa: false,
+    activePanel: 'layers'
+  }
+
+  let frameworks = {
+    'none': {
+      libraries: [],
+      meta: ''
+    },
+    'alpine.js': {
+      source: 'imgs/frameworks/alpine.svg',
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.12.0/alpine.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/alpinejs-datepicker/1.0.6/alpine-datepicker.min.js"
+      ],
+      meta: '<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" defer></script>'
+    },
+    'bootstrap 5': {
+      source: 'imgs/frameworks/bootstrap-5.svg',
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"
+      ],
+      meta: ''
+    },
+    'bulma': {
+      source: 'imgs/frameworks/bulma.svg',
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css"
+      ],
+      meta: ''
+    },
+    'foundation': {
+      source: 'imgs/frameworks/foundation.svg',
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/foundation/6.6.3/css/foundation.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/foundation/6.6.3/js/foundation.min.js"
+      ],
+      meta: ''
+    },
+    'materialize': {
+      source: 'imgs/frameworks/materialize.svg',
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"
+      ],
+      meta: ''
+    },
+    'pico.css': {
+      source: 'imgs/frameworks/pico-css.svg',
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/picocss/2.0.6/pico.min.css",
+        "https://michaelsboost.com/TailwindCSSMod/tailwind-mod-noreset.min.js"
+      ],
+      meta: ''
+    },
+    'semantic': {
+      source: 'imgs/frameworks/semantic-ui.svg',
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.2/semantic.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.2/semantic.min.js"
+      ],
+      meta: ''
+    },
+    'tailwind': {
+      source: 'imgs/frameworks/tailwind.svg',
+      libraries: [
+        "https://michaelsboost.com/TailwindCSSMod/tailwind-mod-noreset.min.js"
+      ],
+      meta: ''
+    },
+    'uikit': {
+      source: 'imgs/frameworks/uikit.svg',
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.17.2/css/uikit.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.17.2/js/uikit.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.17.2/js/uikit-icons.min.js"
+      ],
+      meta: ''
+    }
+  };
+
+  let modalContent = `
+  <style>
+    .framework-image {
+      filter: grayscale(100%) brightness(0.5);
+      transition: filter 0.3s ease-in-out;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    input[name="framework"]:checked + label .framework-image {
+      filter: grayscale(0%) brightness(1);
+    }
+    .image-container {
+      aspect-ratio: 1 / 1; /* Ensures the container is always square */
+      width: 100%;
+      height: 100%;
+      max-width: 256px;
+      display: flex;
+      align-items: center;
+      overflow: visible; /* Allow the shadow to extend outside */
+      position: relative; /* Ensures positioning context for the shadow */
+      padding: 1rem; /* Adds padding to make space for the shadow */
+    }
+    .framework-name {
+      filter: grayscale(100%) brightness(0.5);
+      transition: color 0.3s ease-in-out; /* Smooth transition for color change */
+    }
+    input[name="framework"]:checked + label .framework-name {
+      filter: grayscale(0%) brightness(1);
+      color: #3b82f6; /* Tailwind's blue-500 color */
+    }
+    input[name="framework"][value="none"]:checked + label .framework-name {
+      color: #ef4444; /* Tailwind's red-500 color to match the SVG */
+    }
+  </style>
+  <div class="p-4">
+    <div class="p-4 text-center">All current data will be lost.</div>
+    <div class="mb-4 text-center">Please select a framework to start your new project.</div>
+    <div class="grid grid-cols-4 gap-4 place-items-center">
+      <div class="text-center">
+        <input type="radio" checked="true" name="framework" id="dnwk5f059" value="none" class="hidden peer" />
+        <label for="dnwk5f059" class="cursor-pointer grid grid-rows-1 items-center bg-transparent border-0 focus-within:shadow-none">
+          <div class="flex flex-col justify-between h-full">
+            <div class="image-container">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full text-red-400 framework-image" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12 4c-4.419 0-8 3.582-8 8s3.581 8 8 8s8-3.582 8-8s-3.581-8-8-8m3.707 10.293a.999.999 0 1 1-1.414 1.414L12 13.414l-2.293 2.293a.997.997 0 0 1-1.414 0a1 1 0 0 1 0-1.414L10.586 12L8.293 9.707a.999.999 0 1 1 1.414-1.414L12 10.586l2.293-2.293a.999.999 0 1 1 1.414 1.414L13.414 12z"/>
+              </svg>
+            </div>
+            <div class="capitalize text-center mt-2 framework-name">none</div>
+          </div>
+        </label>
+      </div>
+      ${Object.keys(frameworks).map(framework => {
+        if (framework === 'none') return;
+        const id = generateId();
+  
+        // Capitalize the first letter and make the rest lowercase
+        const formattedFrameworkName = framework.charAt(0).toUpperCase() + framework.slice(1).toLowerCase();
+      
+        return `
+          <div class="text-center">
+            <input type="radio" name="framework" id="${id}" value="${framework}" class="hidden peer" />
+            <label for="${id}" class="cursor-pointer grid grid-rows-1 items-center bg-transparent border-0 focus-within:shadow-none">
+              <div class="flex flex-col justify-between h-full">
+                <div class="image-container">
+                  <img src="${frameworks[framework].source}" alt="${formattedFrameworkName}" 
+                    class="framework-image" loading="lazy" />
+                </div>
+                <div class="text-center mt-2 framework-name">${formattedFrameworkName}</div>
+              </div>
+            </label>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  </div>`;
+
   Modal.render({
     title: "Are you sure you want to start a new project?",
-    content: `<div class="p-4 text-center">All current data will be lost.</div>`,
+    content: modalContent,
     onConfirm() {
-      emptyStorage();
+      const selectedFramework = document.querySelector('input[name="framework"]:checked');
+      
+      if (selectedFramework) {
+        string = selectedFramework.value;
+        if (string) {
+          // Code to handle the initialization with the selected framework
+          obj.libraries = frameworks[`${string}`].libraries;
+          obj.meta = frameworks[`${string}`].meta;
+          importJSON(obj);
+          data.menuDialog = null;
+        }
+      }
     }
   });
 }
@@ -7932,7 +8217,7 @@ window.addAttribute = addAttribute;
 window.emptyStorage = emptyStorage;
 window.updateVersionPart = updateVersionPart;
 window.commandPalette = commandPalette;
-window.renameRootVariable = renameRootVariable;
+window.modifyRootVariable = modifyRootVariable;
 window.addStyle = addStyle;
 window.addStylePropModal = addStylePropModal;
 window.renameStyleTarget = renameStyleTarget;
