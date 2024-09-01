@@ -2311,6 +2311,89 @@ function Inspector() {
   </div>`;
   };
 
+  const generatePseudosSection = () => {
+    if (!commonLayerTag) data.stylesTarget = null;
+    let styles = '';
+    let selector = '';
+    let activeStyle = null;
+    if (commonLayerTag) {
+      Object.keys(commonLayerTag).forEach(layerKey => {
+        const layer = commonLayerTag[layerKey];
+        if (!data.stylesTarget) {
+          data.stylesTarget = layer.style;
+        }
+      });
+    }
+
+    // Target specific pseudo style
+    if (data.stylesTarget && data.stylesPropTarget === "pseudos") {
+      if (project.css.styles[data.stylesTarget].pseudos) {
+        Object.keys(project.css.styles[data.stylesTarget].pseudos).forEach(index => {
+          selector = project.css.styles[data.stylesTarget].pseudos[index].selector;
+          if (data.pseudosSelector === selector) {
+            buttonClass = buttonItemClass.split('bg-transparent border-0').join('');
+            activeStyle = true;
+            data.pseudosSelectorIndex = index;
+          } else {
+            buttonClass = 'bg-transparent text-[.6rem] p-0 m-0 h-full text-left';
+            activeStyle = null;
+          }
+          styles += `<button 
+            class="${buttonClass.split('capitalize').join('')} p-2 border ${project.dark ? "border-gray-700" : "border-gray-300"}" ${activeStyle ? '' : 'style="color: unset;"'}
+            onclick="data.pseudosSelector = this.textContent;">${selector}</button>`;
+        });
+      }
+    }
+
+    return `<div class="border-0 border-b border-solid pb-2 mb-4 ${project.dark ? "border-gray-800" : "border-gray-200"}">
+    <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize">
+      <button class="${buttonItemClass}" style="color: unset;" onclick="data.stylePseudosCollapsed = !data.stylePseudosCollapsed;">
+        pseudos
+      </button>
+      <button class="${buttonAddItemClass}" style="color: unset;" onclick="addPseudo('${data.stylesTarget}')">
+        <svg class="w-3" viewBox="0 0 576 512" style="color: unset;">
+          <path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="grid grid-cols-1 gap-1 items-center py-2 capitalize ${data.stylePseudosCollapsed ? 'hidden' : ''}">
+      ${data.stylesTarget ? `<div class="grid grid-cols-2 gap-1 items-center py-2 capitalize">
+        ${styles}
+      </div>` : ''}
+      ${data.pseudosSelector && data.stylesTarget ? `
+        <div class="grid grid-cols-2 gap-1 items-center pb-2 capitalize">
+          <button 
+            aria-label="Rename pseudo for ${data.breakpointKey}px"
+            name="rename pseudo for ${data.breakpointKey}px"
+            class="${RenameOrDeleteButtonClass} p-2 border ${project.dark ? "text-green-600 border-green-800" : "text-green-700 border-green-400"}"
+            onclick="renamePseudo('${data.pseudosSelector}');">
+            Rename
+          </button>
+          <button 
+            aria-label="Delete pseudo for ${data.breakpointKey}px"
+            name="delete pseudo for ${data.breakpointKey}px"
+            class="${RenameOrDeleteButtonClass} p-2 border ${project.dark ? "text-red-600 border-red-800" : "text-red-600 border-red-400"}"
+            onclick="deletePseudo();">
+            Delete
+          </button>
+        </div>
+      ` : ''}
+      ${data.pseudosSelector && data.stylesTarget ? `
+        <div class="grid grid-cols-1 gap-1 items-center capitalize">
+          <button 
+            aria-label="De-select the ${data.stylesTarget} style"
+            name="de-select the ${data.stylesTarget} style"
+            class="${RenameOrDeleteButtonClass} p-2 border ${project.dark ? "border-gray-700" : "border-gray-300"}"
+            style="color: unset;"
+            onclick="data.pseudosSelector = null;">
+            De-select
+          </button>
+        </div>
+      ` : ''}
+    </div>
+  </div>`;
+  };
+
   const generateStylePropertiesSection = () => {
     let styles = '';
     let styleKey = null;
@@ -2498,89 +2581,6 @@ function Inspector() {
         ${styles}
       </div>
     </div>`;
-  };
-
-  const generatePseudosSection = () => {
-    if (!commonLayerTag) data.stylesTarget = null;
-    let styles = '';
-    let selector = '';
-    let activeStyle = null;
-    if (commonLayerTag) {
-      Object.keys(commonLayerTag).forEach(layerKey => {
-        const layer = commonLayerTag[layerKey];
-        if (!data.stylesTarget) {
-          data.stylesTarget = layer.style;
-        }
-      });
-    }
-
-    // Target specific pseudo style
-    if (data.stylesTarget && data.stylesPropTarget === "pseudos") {
-      if (project.css.styles[data.stylesTarget].pseudos) {
-        Object.keys(project.css.styles[data.stylesTarget].pseudos).forEach(index => {
-          selector = project.css.styles[data.stylesTarget].pseudos[index].selector;
-          if (data.pseudosSelector === selector) {
-            buttonClass = buttonItemClass.split('bg-transparent border-0').join('');
-            activeStyle = true;
-            data.pseudosSelectorIndex = index;
-          } else {
-            buttonClass = 'bg-transparent text-[.6rem] p-0 m-0 h-full text-left';
-            activeStyle = null;
-          }
-          styles += `<button 
-            class="${buttonClass.split('capitalize').join('')} p-2 border ${project.dark ? "border-gray-700" : "border-gray-300"}" ${activeStyle ? '' : 'style="color: unset;"'}
-            onclick="data.pseudosSelector = this.textContent;">${selector}</button>`;
-        });
-      }
-    }
-
-    return `<div class="border-0 border-b border-solid pb-2 mb-4 ${project.dark ? "border-gray-800" : "border-gray-200"}">
-    <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize">
-      <button class="${buttonItemClass}" style="color: unset;" onclick="data.stylePseudosCollapsed = !data.stylePseudosCollapsed;">
-        pseudos
-      </button>
-      <button class="${buttonAddItemClass}" style="color: unset;" onclick="addPseudo('${data.stylesTarget}')">
-        <svg class="w-3" viewBox="0 0 576 512" style="color: unset;">
-          <path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path>
-        </svg>
-      </button>
-    </div>
-    <div class="grid grid-cols-1 gap-1 items-center py-2 capitalize ${data.stylePseudosCollapsed ? 'hidden' : ''}">
-      ${data.stylesTarget ? `<div class="grid grid-cols-2 gap-1 items-center py-2 capitalize">
-        ${styles}
-      </div>` : ''}
-      ${data.pseudosSelector && data.stylesTarget ? `
-        <div class="grid grid-cols-2 gap-1 items-center pb-2 capitalize">
-          <button 
-            aria-label="Rename pseudo for ${data.breakpointKey}px"
-            name="rename pseudo for ${data.breakpointKey}px"
-            class="${RenameOrDeleteButtonClass} p-2 border ${project.dark ? "text-green-600 border-green-800" : "text-green-700 border-green-400"}"
-            onclick="renamePseudo('${data.pseudosSelector}');">
-            Rename
-          </button>
-          <button 
-            aria-label="Delete pseudo for ${data.breakpointKey}px"
-            name="delete pseudo for ${data.breakpointKey}px"
-            class="${RenameOrDeleteButtonClass} p-2 border ${project.dark ? "text-red-600 border-red-800" : "text-red-600 border-red-400"}"
-            onclick="deletePseudo();">
-            Delete
-          </button>
-        </div>
-      ` : ''}
-      ${data.pseudosSelector && data.stylesTarget ? `
-        <div class="grid grid-cols-1 gap-1 items-center capitalize">
-          <button 
-            aria-label="De-select the ${data.stylesTarget} style"
-            name="de-select the ${data.stylesTarget} style"
-            class="${RenameOrDeleteButtonClass} p-2 border ${project.dark ? "border-gray-700" : "border-gray-300"}"
-            style="color: unset;"
-            onclick="data.pseudosSelector = null;">
-            De-select
-          </button>
-        </div>
-      ` : ''}
-    </div>
-  </div>`;
   };
 
   const generateAnimationsSection = () => {
@@ -3043,10 +3043,10 @@ function Inspector() {
       ${generatePreviewSize()}
       ${generateRootVariablesSection()}
       ${generateStylesSection()}
+      ${data.stylesTarget && data.stylesPropTarget === "pseudos" ? generatePseudosSection() : ''}
       ${data.stylesTarget ? generateStylePropertiesSection() : ''}
       ${data.stylesTarget ? generateBreakpointsSection() : ''}
       ${data.breakpointKey ? generateBreakpointStylesSection() : ''}
-      ${data.stylesTarget && data.stylesPropTarget === "pseudos" ? generatePseudosSection() : ''}
       ${data.stylesTarget ? generateAnimationsSection() : ''}
       ${data.animationTarget ? generateAnimationPropertySection() : ''}
       ${generateAttributesSection()}
