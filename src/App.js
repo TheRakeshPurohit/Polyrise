@@ -517,16 +517,11 @@ let d = {
         type: "image",
         code: `<figure>
   <picture>
-    <!-- For high-resolution screens or larger viewports -->
-    <source media="(min-width: 800px)" srcset="https://www.gstatic.com/webp/gallery/4.sm.webp" type="image/webp">
-    <!-- For medium-sized viewports -->
-    <source media="(min-width: 500px)" srcset="https://www.gstatic.com/webp/gallery/4.sm.webp" type="image/webp">
-    <!-- Fallback for smaller viewports or if WebP is not supported -->
-    <img src="https://www.gstatic.com/webp/gallery/4.sm.jpg" alt="${app.name}">
+    <img src="https://cdn.pixabay.com/photo/2015/10/16/19/18/balloon-991680_1280.jpg" alt="${app.name}">
   </picture>
   <figcaption>
     <span>Image courtesy of </span>
-    <a href="https://developers.google.com/speed/webp/gallery" target="_blank">Google Developer's</a>
+    <a href="https://pixabay.com/photos/balloon-heart-love-red-romantic-991680/" target="_blank">Pixabay.com</a>
     <span>.</span>
   </figcaption>
 </figure>
@@ -6238,7 +6233,21 @@ window.canAcceptChildren = layer => {
 }
 window.addBlock = html => {
   saveState(); // Save state before making changes
-  const newBlocks = html2json(html); // Convert HTML to JSON
+
+  // Function to assign an ID to each new block
+  const assignIds = (blocks, callback) => {
+    blocks.forEach(block => {
+      block.id = generateId(); // Assign a new ID
+      if (block.children) {
+        assignIds(block.children); // Recursively assign IDs to children if they exist
+      }
+    });
+
+    if (callback && typeof callback === 'function') {
+      callback(); // Call the callback function after all IDs have been assigned
+    }
+  };
+
   if (data.selectedLayerIds.length > 0) {
     // If user has multiple layers selected
     data.selectedLayerIds.forEach(id => {
@@ -6250,19 +6259,29 @@ window.addBlock = html => {
           // Ensure `layer.children` is initialized
           layer.children = layer.children || [];
 
-          // Add new blocks
-          newBlocks.forEach(newBlock => layer.children.push(newBlock));
+          // Assign IDs and then push new blocks
+          const newBlocks = html2json(html); // Convert HTML to JSON
+          assignIds(newBlocks, () => {
+            newBlocks.forEach(newBlock => {
+              layer.children.push(newBlock); // Push new block after ID assignment
+            });
+          });
         }
       }
     });
   } else {
     // If user has no layers selected, add to the root layer structure
-    newBlocks.forEach(newBlock => project.html.push(newBlock));
+    const newBlocks = html2json(html); // Convert HTML to JSON
+    assignIds(newBlocks, () => {
+      newBlocks.forEach(newBlock => project.html.push(newBlock)); // Push new block after ID assignment
+    });
   }
+
   clearAllSelections();
   saveState(); // Save state after making changes
   renderPreview();
-}
+};
+
 window.deleteLayers = () => {
   saveState(); // Save state before making changes
   data.editorNavState = true;
