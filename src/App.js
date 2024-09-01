@@ -2316,6 +2316,63 @@ function Inspector() {
   </div>`;
   };
 
+  const generateStylePropertiesSection = () => {
+    let styles = '';
+    let styleKey = null;
+
+    if (commonLayerTag) {
+      Object.keys(commonLayerTag).forEach(layerKey => {
+        const layer = commonLayerTag[layerKey];
+        styleKey = layer.style;
+      });
+    }
+
+    let obj = project.css.styles;
+    const detectStylesPropTarget = ['base', 'pseudos'];
+    if (detectStylesPropTarget.includes(data.stylesPropTarget)) {
+      Object.keys(obj).forEach(key => {
+        if (styleKey === key || data.stylesTarget == key) {
+          if (data.stylesPropTarget === 'pseudos') {
+            const index = data.pseudosSelectorIndex;
+            if (data.pseudosSelector) {
+              if (obj[key].pseudos[index].styles) {
+                styles += processStyles(obj[key].pseudos[index].styles, `project.css.styles['${key}'].pseudos['${index}'].styles`, key);
+              }
+            }
+          } else {
+            if (obj[key][data.stylesPropTarget]) {
+              styles += processStyles(obj[key][data.stylesPropTarget], `project.css.styles['${key}']['${data.stylesPropTarget}']`, key);
+            }
+          }
+        }
+      });
+    }
+
+    let stylesObj = 'project.css.styles[data.stylesTarget][data.stylesPropTarget]';
+    if (data.stylesPropTarget === "pseudos") {
+      stylesObj = 'project.css.styles[data.stylesTarget][data.stylesPropTarget][data.pseudosSelectorIndex].styles';
+    }
+
+    return `<div class="border-0 border-b border-solid pb-2 mb-4 ${project.dark ? "border-gray-800" : "border-gray-200"}">
+      <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize">
+        <button class="${buttonItemClass}" style="color: unset;" onclick="data.stylePropsCollapsed = !data.stylePropsCollapsed;">
+          style properties
+        </button>
+        <button 
+          class="${buttonAddItemClass}" 
+          style="color: unset;" 
+          onclick="addStylePropModal('${styleKey}', ${stylesObj});">
+          <svg class="w-3" viewBox="0 0 576 512" style="color: unset;">
+            <path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize ${data.stylePropsCollapsed ? 'hidden' : ''}">
+        ${styles}
+      </div>
+    </div>`;
+  };
+
   const generateBreakpointsSection = () => {
     if (!commonLayerTag) data.stylesTarget = null;
     let styles = '';
@@ -2712,63 +2769,6 @@ function Inspector() {
   </div>`;
   };
 
-  const generateStylePropertiesSection = () => {
-    let styles = '';
-    let styleKey = null;
-
-    if (commonLayerTag) {
-      Object.keys(commonLayerTag).forEach(layerKey => {
-        const layer = commonLayerTag[layerKey];
-        styleKey = layer.style;
-      });
-    }
-
-    let obj = project.css.styles;
-    const detectStylesPropTarget = ['base', 'pseudos'];
-    if (detectStylesPropTarget.includes(data.stylesPropTarget)) {
-      Object.keys(obj).forEach(key => {
-        if (styleKey === key || data.stylesTarget == key) {
-          if (data.stylesPropTarget === 'pseudos') {
-            const index = data.pseudosSelectorIndex;
-            if (data.pseudosSelector) {
-              if (obj[key].pseudos[index].styles) {
-                styles += processStyles(obj[key].pseudos[index].styles, `project.css.styles['${key}'].pseudos['${index}'].styles`, key);
-              }
-            }
-          } else {
-            if (obj[key][data.stylesPropTarget]) {
-              styles += processStyles(obj[key][data.stylesPropTarget], `project.css.styles['${key}']['${data.stylesPropTarget}']`, key);
-            }
-          }
-        }
-      });
-    }
-
-    let stylesObj = 'project.css.styles[data.stylesTarget][data.stylesPropTarget]';
-    if (data.stylesPropTarget === "pseudos") {
-      stylesObj = 'project.css.styles[data.stylesTarget][data.stylesPropTarget][data.pseudosSelectorIndex].styles';
-    }
-
-    return `<div class="border-0 border-b border-solid pb-2 mb-4 ${project.dark ? "border-gray-800" : "border-gray-200"}">
-      <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize">
-        <button class="${buttonItemClass}" style="color: unset;" onclick="data.stylePropsCollapsed = !data.stylePropsCollapsed;">
-          style properties
-        </button>
-        <button 
-          class="${buttonAddItemClass}" 
-          style="color: unset;" 
-          onclick="addStylePropModal('${styleKey}', ${stylesObj});">
-          <svg class="w-3" viewBox="0 0 576 512" style="color: unset;">
-            <path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path>
-          </svg>
-        </button>
-      </div>
-      <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize ${data.stylePropsCollapsed ? 'hidden' : ''}">
-        ${styles}
-      </div>
-    </div>`;
-  };
-
   const generateAttributesSection = () => {
     if (selectedLayers.length === 0) return '';
     
@@ -3048,12 +3048,12 @@ function Inspector() {
       ${generatePreviewSize()}
       ${generateRootVariablesSection()}
       ${generateStylesSection()}
+      ${data.stylesTarget ? generateStylePropertiesSection() : ''}
       ${data.stylesTarget ? generateBreakpointsSection() : ''}
       ${data.breakpointKey ? generateBreakpointStylesSection() : ''}
       ${data.stylesTarget && data.stylesPropTarget === "pseudos" ? generatePseudosSection() : ''}
       ${data.stylesTarget ? generateAnimationsSection() : ''}
       ${data.animationTarget ? generateAnimationPropertySection() : ''}
-      ${data.stylesTarget ? generateStylePropertiesSection() : ''}
       ${generateAttributesSection()}
     </div>
   `;
@@ -7255,6 +7255,7 @@ window.newProject = () => {
           obj.meta = frameworks[`${string}`].meta;
           importJSON(obj);
           data.menuDialog = null;
+          App.render('#app');
         }
       }
     }

@@ -52,36 +52,7 @@
           "right": "0",
           "transition": "var(--transition)"
         },
-        "pseudos": [
-          {
-            "selector": ":hover",
-            "styles": {
-              "background": "var(--hover-bg-color)"
-            }
-          },
-          {
-            "selector": "::before",
-            "styles": {
-              "content": "'",
-              "position": "absolute",
-              "top": "0",
-              "left": "0",
-              "padding": "0.5rem",
-              "background-color": "rgba(0, 0, 0, 0.1)"
-            }
-          },
-          {
-            "selector": "::after",
-            "styles": {
-              "content": "'",
-              "position": "absolute",
-              "bottom": "0",
-              "right": "0",
-              "padding": "0.5rem",
-              "background-color": "rgba(0, 0, 0, 0.1)"
-            }
-          }
-        ]
+        "pseudos": []
       },
       ".hero": {
         "base": {
@@ -201,11 +172,11 @@
       "state": {
         "collapsed": false,
         "visible": true,
-        "selected": false
+        "selected": true
       },
       "name": "nav",
       "type": "box",
-      "text": "Product Landing Page",
+      "text": "Polyrise",
       "props": {
         "class": "navbar"
       },
@@ -255,7 +226,7 @@
               },
               "name": "h1",
               "type": "text",
-              "text": "Build Your Web UI with JSON",
+              "text": "Free Mobile Website Builder! ",
               "props": {},
               "children": [],
               "style": ".hero h1"
@@ -271,7 +242,7 @@
               },
               "name": "p",
               "type": "text",
-              "text": "This project dynamically generates HTML, CSS, and JavaScript event listeners from a JSON structure, with auto-generated unique IDs for styling.",
+              "text": "Create awesome responsive websites. Easy and fast - No coding! Free for commercial use.",
               "children": []
             },
             {
@@ -405,7 +376,8 @@
               "text": "Describe the second feature of the product here.",
               "children": []
             }
-          ]
+          ],
+          "style": ".feature"
         },
         {
           "tag": "div",
@@ -451,7 +423,8 @@
               "text": "Describe the third feature of the product here.",
               "children": []
             }
-          ]
+          ],
+          "style": ".feature"
         }
       ],
       "style": ".features"
