@@ -3502,7 +3502,7 @@ const App = {
   }
 }
 window.App = App;
-function emptyStorage() {
+window.emptyStorage = () => {
   Modal.render({
     title: "Are you sure you want to empty storage?",
     content: '<div class="p-4 text-center">All current data will be lost.</div>',
@@ -3547,7 +3547,7 @@ function emptyStorage() {
     }
   });
 }
-function updateVersionPart(part, value) {
+window.updateVersionPart = (part, value) => {
   const versionParts = project.version.split('.');
   if (part === 'major') {
     versionParts[0] = value;
@@ -3558,7 +3558,7 @@ function updateVersionPart(part, value) {
   }
   project.version = versionParts.join('.');
 }
-function commandPalette() {
+window.commandPalette = () => {
   let buttonClass = `text-xs w-auto px-3 py-2 m-0 capitalize rounded-md bg-transparent border ${project.dark ? 'border-gray-600' : 'border-gray-400'}`;
   let commands = {
     "fold all": "f",
@@ -3723,7 +3723,7 @@ function commandPalette() {
 }
 
 // Inspector functions
-function modifyRootVariable(id) {
+window.modifyRootVariable = id => {
   let modalContent = `<div class="p-4grid grid-cols-1 gap-4">
       <div class="grid grid-cols-2 gap-4">
         <div>
@@ -3831,7 +3831,7 @@ function modifyRootVariable(id) {
     }
   });
 }
-function addStyle() {
+window.addStyle = () => {
   let modalContent = `
     <input 
       id="vvrh9nxwk" 
@@ -3884,7 +3884,7 @@ function addStyle() {
     }
   });
 }
-function addStylePropModal(id, obj) {
+window.addStylePropModal = (id, obj) => {
   // Define default values for each property type
   const defaultValues = data.defaultValues;
 
@@ -4022,7 +4022,7 @@ function addStylePropModal(id, obj) {
     }
   });
 }
-function renameStyleTarget(target) {
+window.renameStyleTarget = target => {
   let modalContent = `<div class="p-4 text-center">
     <input id="lnjvy3iz2" type="text" placeholder="Style name/target..." onkeydown="
         if (event.key === 'Enter') {
@@ -4077,7 +4077,7 @@ function renameStyleTarget(target) {
     }
   });
 }
-function deleteStyleTarget(target) {
+window.deleteStyleTarget = target => {
   let modalContent = `<div class="p-4 text-center">You will still be able to undo.</div>`;
   
   // Render the modal
@@ -4095,7 +4095,7 @@ function deleteStyleTarget(target) {
     }
   });
 }
-function addBreakpoint() {
+window.addBreakpoint = () => {
   let modalContent = `
     <select 
       id="j6xqh4air" 
@@ -4150,7 +4150,7 @@ function addBreakpoint() {
     }
   });
 }
-function renameBreakpointKey(size) {
+window.renameBreakpointKey = size => {
   let modalContent = `<div class="p-4 text-center">
     <input id="mow5ep6l7" type="number" placeholder="Style name/target..." onkeydown="
         if (event.key === 'Enter') {
@@ -4193,7 +4193,7 @@ function renameBreakpointKey(size) {
     }
   });
 }
-function deleteBreakpointKey(size) {
+window.deleteBreakpointKey = size => {
   let modalContent = `<div class="p-4 text-center">You will still be able to undo.</div>`;
   
   // Render the modal
@@ -4201,7 +4201,7 @@ function deleteBreakpointKey(size) {
     title: `Are you sure you want to delete the "${size}" style?`,
     content: modalContent,
     onConfirm() {
-      if (project.css.breakpoints[size]) {
+      if (size in project.css.breakpoints) {
         data.breakpointKey = null;
         delete project.css.breakpoints[size];
         saveState();
@@ -4209,7 +4209,7 @@ function deleteBreakpointKey(size) {
     }
   });
 }
-function addAnimation() {
+window.addAnimation = () => {
   let modalContent = `
     <input 
       id="vvrh9nxwk" 
@@ -4257,7 +4257,7 @@ function addAnimation() {
     }
   });
 }
-function renameAnimation(name) {
+window.renameAnimation = name => {
   let modalContent = `<div class="p-4 text-center">
     <input id="mow5ep6l7" type="text" placeholder="Animation name here..." onkeydown="
         if (event.key === 'Enter') {
@@ -4303,7 +4303,7 @@ function renameAnimation(name) {
     }
   });
 }
-function deleteAnimation(name) {
+window.deleteAnimation = name => {
   let modalContent = `<div class="p-4 text-center">You will still be able to undo.</div>`;
   
   // Render the modal
@@ -4320,7 +4320,7 @@ function deleteAnimation(name) {
     }
   });
 }
-function addKeyFrame() {
+window.addKeyFrame = () => {
   if (!data.animationTarget) return;
   let modalContent = `
     <input 
@@ -4362,7 +4362,7 @@ function addKeyFrame() {
     }
   });
 }
-function renameKeyFrame(name) {
+window.renameKeyFrame = name => {
   let modalContent = `<div class="p-4 text-center">
     <input id="mow5ep6l7" type="text" placeholder="From, To, 0%, 50%, 100%, etc:" onkeydown="
         if (event.key === 'Enter') {
@@ -4409,7 +4409,7 @@ function renameKeyFrame(name) {
     }
   });
 }
-function deleteKeyFrame(name) {
+window.deleteKeyFrame = name => {
   let modalContent = `<div class="p-4 text-center">You will still be able to undo.</div>`;
   
   // Render the modal
@@ -4426,7 +4426,7 @@ function deleteKeyFrame(name) {
     }
   });
 }
-function addToKeyframe() {
+window.addToKeyframe = () => {
   if (!data.animationTarget || !data.animationKeyframe) return;
   let modalContent = `
     <input 
@@ -4468,7 +4468,7 @@ function addToKeyframe() {
     }
   });
 }
-function deleteStyleProp(id, prop, e, detect = null) {
+window.deleteStyleProp = (id, prop, e, detect = null) => {
   let obj = null;
   if (detect) {
     if (detect === "breakpoints") {
@@ -4491,7 +4491,7 @@ function deleteStyleProp(id, prop, e, detect = null) {
   App.render("#app");
   renderPreview();
 }
-function clearStyles(layers, query, callback) {
+window.clearStyles = (layers, query, callback) => {
   // first delete the style object
   if (project.css.styles[query]) {
     delete project.css[query];
@@ -4520,7 +4520,7 @@ function clearStyles(layers, query, callback) {
     }
   }
 }
-function styleModal(id, prop, currentValue, detect = null) {
+window.styleModal = (id, prop, currentValue, detect = null) => {
   const cssFixedValueProperties = data.cssFixedValueProperties;
 
   let detected = null;
@@ -4620,7 +4620,7 @@ function styleModal(id, prop, currentValue, detect = null) {
     }
   });
 }
-function addPseudo(selector) {
+window.addPseudo = selector => {
   // Ensure the selector exists and initialize pseudos if not already present
   if (!project.css.styles[selector]) return;
   if (!project.css.styles[selector].pseudos) {
@@ -4726,7 +4726,7 @@ function addPseudo(selector) {
     }
   });
 }
-function renamePseudo(oldName) {
+window.renamePseudo = oldName => {
   // Define available pseudo-classes and pseudo-elements
   const pseudos = [
     'none',
@@ -4823,7 +4823,7 @@ function renamePseudo(oldName) {
     }
   });
 }
-function deletePseudo() {
+window.deletePseudo = () => {
   const name = data.pseudosSelector;
   const pseudoIndex = data.pseudosSelectorIndex;
   let modalContent = `<div class="p-4 text-center">You will still be able to undo.</div>`;
@@ -4846,7 +4846,7 @@ function deletePseudo() {
 }
 
 // editor functions
-function html2json(input) {
+window.html2json = input => {
   function elementToJson(element) {
     const boxElements = data.boxElements;
     const textElements = data.textElements;
@@ -4922,7 +4922,7 @@ function html2json(input) {
   const json = Array.from(doc.body.children).map(child => elementToJson(child));
   return json;
 }
-function json2html(input) {
+window.json2html = input => {
   function jsonToElement(json) {
     const renderElement = element => {
       let html = '';
@@ -5007,7 +5007,7 @@ function json2html(input) {
 
   return beautifyHtml(input);
 }
-function css2json(css) {
+window.css2json = css => {
   if (typeof css !== 'string') {
     throw new Error("Input must be a CSS string");
   }
@@ -5143,7 +5143,7 @@ function css2json(css) {
 
   return json;
 }
-function json2css(styles) {
+window.json2css = styles => {
   let css = '';
   let symbol = "";
   let semicolon = ";";
@@ -5286,7 +5286,7 @@ function json2css(styles) {
   return css;
 }
 
-function json2preprocessor(styles) {
+window.json2preprocessor = styles => {
   let css = '';
   let symbol = "";
   let semicolon = ";";
@@ -5452,7 +5452,7 @@ function json2preprocessor(styles) {
 
   return css;
 }
-function mergeCSSJSON(existingJSON, newJSON) {
+window.mergeCSSJSON = (existingJSON, newJSON) => {
   if (typeof existingJSON === 'string') {
     throw new Error("Input's must be JSON");
   }
@@ -5517,7 +5517,7 @@ function mergeCSSJSON(existingJSON, newJSON) {
   return existingJSON;
 }
 
-function saveState() {
+window.saveState = () => {
   // Save the current state to history
   const currentState = {
     rootVariables: project.css.rootVariables,
@@ -5537,7 +5537,7 @@ function saveState() {
     localStorage.setItem('Polyrise', JSON.stringify(project));
   }
 }
-function undo() {
+window.undo = () => {
   if (data.historyIndex > 0) {
     data.editorNavState = true;
     data.historyIndex--;
@@ -5550,7 +5550,7 @@ function undo() {
     data.editorNavState = null;
   }
 }
-function redo() {
+window.redo = () => {
   if (data.historyIndex < data.history.length - 1) {
     data.editorNavState = true;
     data.historyIndex++;
@@ -5563,7 +5563,7 @@ function redo() {
     data.editorNavState = null;
   }
 }
-function customCode() {
+window.customCode = () => {
   Modal.render({
     title: "Paste Custom Code",
     content: `
@@ -5596,7 +5596,7 @@ function customCode() {
     }
   });
 }
-const addLibrary = url => {
+window.addLibrary = url => {
   if (!url) {
     project.libraries.push('');
     document.getElementById('librariesBox').innerHTML = renderLibraries();
@@ -5613,7 +5613,7 @@ const addLibrary = url => {
     document.getElementById('librariesBox').innerHTML = renderLibraries();
   }
 };
-function renderLibraries() {
+window.renderLibraries = () => {
   return project.libraries.map((library, index) => `
     <nav class="flex justify-between py-2" data-index="${index}">
       <input 
@@ -5634,7 +5634,7 @@ function renderLibraries() {
     </nav>
   `).join('')
 }
-function fetchSuggestions(key) {
+window.fetchSuggestions = key => {
   fetch(
     `https://api.cdnjs.com/libraries?search=${key}&fields=filename,description,version`
   )
@@ -5674,11 +5674,11 @@ function fetchSuggestions(key) {
       console.error("Error fetching data:", error);
     });
 }
-function removeScript(src) {
+window.removeScript = src => {
   const script = document.querySelector(`script[src="${src}"]`);
   if (script) script.remove();
 }
-function removeScripts(scripts) {
+window.removeScripts = scripts => {
   scripts.forEach(src => {
     const script = document.querySelector(`script[src="${src}"]`);
     if (script) script.remove();
@@ -5706,7 +5706,7 @@ async function loadScripts(srcArray) {
 }
 
 // layers functions
-function executeQuery(queriesString, replaceSelection = true) {
+window.executeQuery = (queriesString, replaceSelection = true) => {
   if (!queriesString) {
     clearAllSelections();
     return;
@@ -5917,7 +5917,7 @@ function executeQuery(queriesString, replaceSelection = true) {
   queries.forEach(processQuery);
 }
 
-function toggleCollapse(layerId) {
+window.toggleCollapse = layerId => {
   let targetLayer = null;
   let parentLayer = null;
 
@@ -5980,7 +5980,7 @@ function toggleCollapse(layerId) {
     App.render("#app");
   }
 }
-function foldAllLayers(state = false) {
+window.foldAllLayers = (state = false) => {
   function collapseLayer(layer) {
     layer.state.collapsed = state;
     if (layer.children) layer.children.forEach(child => collapseLayer(child));
@@ -5988,7 +5988,7 @@ function foldAllLayers(state = false) {
 
   project.html.forEach(layer => collapseLayer(layer));
 }
-function hideAllLayers(state = false) {
+window.hideAllLayers = (state = false) => {
   function hideLayer(layer) {
     layer.state.visible = !state;
     renderPreview();
@@ -5997,7 +5997,7 @@ function hideAllLayers(state = false) {
 
   project.html.forEach(layer => hideLayer(layer));
 }
-function toggleVisible(layerId) {
+window.toggleVisible = layerId => {
   let targetLayer = null;
   let parentLayer = null;
 
@@ -6060,7 +6060,7 @@ function toggleVisible(layerId) {
     renderPreview(); // Ensure the preview is updated
   }
 }
-function selectedBlock(layerId) {
+window.selectedBlock = layerId => {
   let targetLayer = null;
   let parentLayer = null;
 
@@ -6181,7 +6181,7 @@ function selectedBlock(layerId) {
   }
 }
 
-function collectSelectedIDs(layers) {
+window.collectSelectedIDs = layers => {
   layers.forEach(layer => {
     if (layer.state.selected) {
       data.selectedLayerIds.push(layer.id);
@@ -6191,18 +6191,18 @@ function collectSelectedIDs(layers) {
     }
   });
 }
-function clearAllSelections() {
+window.clearAllSelections = () => {
   data.selectedLayerIds = [];
   data.stylesTarget = null;
   clearSelection(project.html);
 }
-function clearSelection(layers) {
+window.clearSelection = layers => {
   layers.forEach(layer => {
     layer.state.selected = false;
     if (layer.children) clearSelection(layer.children);
   });
 }
-function clearSelectionExcept(excludeId, layers) {
+window.clearSelectionExcept = (excludeId, layers) => {
   layers.forEach(layer => {
     if (layer.id !== excludeId) {
       layer.state.selected = false;
@@ -6212,7 +6212,7 @@ function clearSelectionExcept(excludeId, layers) {
     if (layer.children) clearSelectionExcept(excludeId, layer.children);
   });
 }
-function findLayerById(id, layers, parent = null) {
+window.findLayerById = (id, layers, parent = null) => {
   for (const layer of layers) {
     if (layer.id === id) return { layer, parent };
     if (layer.children) {
@@ -6222,7 +6222,7 @@ function findLayerById(id, layers, parent = null) {
   }
   return null;
 }
-function canAcceptChildren(layer) {
+window.canAcceptChildren = layer => {
   const elementsThatDontAcceptChildren = [
     'audio',
     'datalist',
@@ -6239,7 +6239,7 @@ function canAcceptChildren(layer) {
   
   return !elementsThatDontAcceptChildren.includes(layer.tag);
 }
-function addBlock(html) {
+window.addBlock = html => {
   saveState(); // Save state before making changes
   const newBlocks = html2json(html); // Convert HTML to JSON
   if (data.selectedLayerIds.length > 0) {
@@ -6266,7 +6266,7 @@ function addBlock(html) {
   saveState(); // Save state after making changes
   renderPreview();
 }
-function deleteLayers() {
+window.deleteLayers = () => {
   saveState(); // Save state before making changes
   data.editorNavState = true;
   data.selectedLayerIds.forEach(id => {
@@ -6276,7 +6276,7 @@ function deleteLayers() {
   data.editorNavState = null;
   saveState(); // Save state after making changes
 }
-function removeLayerById(id, layers) {
+window.removeLayerById = (id, layers) => {
   for (const layer of layers) {
     if (layer.id === id) {
       const index = layers.findIndex(l => l.id === id);
@@ -6297,7 +6297,7 @@ function removeLayerById(id, layers) {
     }
   }
 }
-function cloneLayers() {
+window.cloneLayers = () => {
   saveState(); // Save state before making changes
   data.selectedLayerIds.forEach(id => {
     const { layer, parent } = findLayerById(id, project.html);
@@ -6331,7 +6331,7 @@ function cloneLayers() {
   saveState(); // Save state after making changes
   renderPreview();
 }
-function cloneLayerObject(layer) {
+window.cloneLayerObject = (layer) => {
   const clonedLayer = JSON.parse(JSON.stringify(layer)); // Deep clone
   clonedLayer.id = generateId(); // Assign a new ID
 
@@ -6340,7 +6340,7 @@ function cloneLayerObject(layer) {
   }
   return clonedLayer;
 }
-function cutLayers(callback) {
+window.cutLayers = callback => {
   saveState(); // Save state before making changes
   data.editorNavState = true;
   copyLayers();
@@ -6356,13 +6356,13 @@ function cutLayers(callback) {
     callback();
   }
 }
-function copyLayers() {
+window.copyLayers = () => {
   data.clipboard = data.selectedLayerIds.map(id => {
     const { layer } = findLayerById(id, project.html);
     return cloneLayerObject(layer); // Clone layer without deleting
   });
 }
-function pasteLayers() {
+window.pasteLayers = () => {
   saveState(); // Save state before making changes
   if (data.clipboard.length > 0) {
     const pastedLayers = data.clipboard.map(layer => {
@@ -6387,7 +6387,7 @@ function pasteLayers() {
     renderPreview();
   }
 }
-function removeAttributeFromLayers(property) {
+window.removeAttributeFromLayers = property => {
   saveState();
   data.selectedLayerIds.forEach(id => {
     const { layer } = findLayerById(id, project.html);
@@ -6397,7 +6397,7 @@ function removeAttributeFromLayers(property) {
   saveState();
   renderPreview();
 }
-function removeProp(key) {
+window.removeProp = key => {
   Modal.render({
     title: `Are you sure you want to delete the ${key} attribute?`,
     content: `
@@ -6408,7 +6408,7 @@ function removeProp(key) {
     }
   });
 }
-function emptyChildren() {
+window.emptyChildren = () => {
   saveState(); // Save state before making changes
   if (data.selectedLayerIds.length > 0) {
     data.selectedLayerIds.forEach(id => {
@@ -6422,7 +6422,7 @@ function emptyChildren() {
   saveState(); // Save state after making changes
   renderPreview();
 }
-function updateElement(key, propKey, value) {
+window.updateElement = (key, propKey, value) => {
   data.selectedLayerIds.forEach(id => {
     const { layer } = findLayerById(id, project.html);
     if (layer) {
@@ -6439,7 +6439,7 @@ function updateElement(key, propKey, value) {
   });
   renderPreview();
 }
-function updateImageMedia(id, type) {
+window.updateImageMedia = (id, type) => {
   let target = findLayerById(id, project.html).layer.props['src'];
   let modalContent = `<div class="p-4 text-center grid grid-cols-1 gap-4 place-items-center">
     <input id="ixkq65jma" class="hidden" type="file" name="image" onchange="updateMediaSource(event, '${type}', document.getElementById('p8gnvn4o7'))">
@@ -6536,7 +6536,7 @@ async function searchOpenverseImage(query) {
       return [];
   }
 }
-function updateAudioMedia(id, type) {
+window.updateAudioMedia = (id, type) => {
   let target = findLayerById(id, project.html).layer;
   if (target.tag !== 'audio' || type !== 'audio') return;
   let uniqueId = generateId();
@@ -6875,16 +6875,16 @@ async function handleIconSearch(event) {
     iconResultsElement.innerHTML = '';
   }
 }
-function selectIcon(svgContent) {
+window.selectIcon = svgContent => {
   iconContainer.innerHTML = svgContent;
 }
-function copyToClipboard(text) {
+window.copyToClipboard = text => {
   navigator.clipboard.writeText(text).then(function() {
   }).catch(function(error) {
     console.error('Failed to copy text: ', error);
   });
 }
-function collectComponents(layers) {
+window.collectComponents = layers => {
   const existingNames = new Set(project.components.map(comp => comp.name));
 
   layers.forEach(layer => {
@@ -6907,7 +6907,7 @@ function collectComponents(layers) {
     }
   });
 }
-function addComponent() {
+window.addComponent = () => {
   if (data.selectedLayerIds.length === 0) return;
   
   saveState(); // Save state before making changes
@@ -6942,7 +6942,7 @@ function addComponent() {
 
   saveState(); // Save state after making changes
 }
-function deleteComponent(index) {
+window.deleteComponent = index => {
   if (index >= 0 && index < project.components.length) {
     project.components.splice(index, 1);
     saveState(); // Save state after making changes
@@ -6952,18 +6952,18 @@ function deleteComponent(index) {
 }
 
 // iframe functions
-function generateId() {
+window.generateId = () => {
   let id = '';
   while (!/^[a-zA-Z]/.test(id)) {
     id = Math.random().toString(36).substr(2, 9);
   }
   return id;
 }
-function resizeCanvas(size) {
+window.resizeCanvas = size => {
   data.selectedSize = size;
   getIFrameClientSize();
 }
-function rotateCanvas() {
+window.rotateCanvas = () => {
   const iframe = document.getElementById('previewElm').firstElementChild;
   if (iframe.style.width === '100%') return false;
 
@@ -6977,7 +6977,7 @@ function rotateCanvas() {
   getIFrameClientSize();
 }
 let fadeTimeout;
-function getIFrameClientSize() {
+window.getIFrameClientSize = () => {
   // resize canvas
   const iframe = document.getElementById('iframe');
   if (iframe.style.width !== '100%') {
@@ -7036,7 +7036,7 @@ async function handleLogoChange(event) {
     console.error('Error converting image to base64:', error);
   }
 }
-function fileToBase64(file) {
+window.fileToBase64 = file => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -7044,7 +7044,7 @@ function fileToBase64(file) {
     reader.onerror = error => reject(error);
   });
 }
-function importJSON(obj) {
+window.importJSON = obj => {
   if (obj === null) return;
   project.name = obj.name;
   project.version = obj.version;
@@ -7065,7 +7065,7 @@ function importJSON(obj) {
   }
   project.html = obj.html;
 }
-function newProject() {
+window.newProject = () => {
   const obj = {
     name: "App name",
     version: "0.0.1",
@@ -7262,7 +7262,7 @@ function newProject() {
     }
   });
 }
-function importProject() {
+window.importProject = () => {
   Modal.render({
     title: "Are you sure you want to load a new project?",
     content: `<div class="p-4 text-center">All current data will be lost.</div>`,
@@ -7303,7 +7303,7 @@ function importProject() {
     }
   });
 }
-function getFileNameAndType(url) {
+window.getFileNameAndType = url => {
   // Extract the file name with extension from the URL
   const fileName = url.substring(url.lastIndexOf('/') + 1);
   
@@ -7335,7 +7335,7 @@ function getFileNameAndType(url) {
     fileType
   };
 }
-function fetchResources(obj) {
+window.fetchResources = obj => {
   try {
     const doc = new DOMParser().parseFromString(json2html(obj.html), 'text/html');
     const body = doc.body;
@@ -7538,7 +7538,7 @@ async function getBase64Media(mediaUrl) {
     reader.readAsDataURL(blob);
   });
 }
-function renderStyles(styles) {
+window.renderStyles = styles => {
   let css = '';
 
   // Define :root variables
@@ -7652,7 +7652,7 @@ async function getFile(url, callback) {
     callback(error); // Call the callback with the error
   }
 }
-function minifyCSS(source) {
+window.minifyCSS = source => {
   // Convert the source to a string if it isn't one
   source = String(source);
   // Remove comments
@@ -8240,7 +8240,7 @@ async function screenshot() {
     removeScript("../libraries/jszip/FileSaver.min.js");
   }
 }
-function renderPreview(forceRun = false) {
+window.renderPreview = (forceRun = false) => {
   const iframe = document.getElementById('iframe');
   if (!iframe) return;
 
@@ -8305,7 +8305,7 @@ ${scriptTags ? scriptTags : ''}
     diffNodes(idoc.documentElement, doc.documentElement);
   }
 }
-function detectOperatingSystem() {
+window.detectOperatingSystem = () => {
   const userAgent = navigator.userAgent || navigator.platform;
 
   // Check for Mac OS
@@ -8414,100 +8414,23 @@ window.Modal = Modal;
 window.librariesDialog = librariesDialog;
 window.attributesModal = attributesModal;
 window.addAttribute = addAttribute;
-window.emptyStorage = emptyStorage;
-window.updateVersionPart = updateVersionPart;
-window.commandPalette = commandPalette;
-window.modifyRootVariable = modifyRootVariable;
-window.addStyle = addStyle;
-window.addStylePropModal = addStylePropModal;
-window.renameStyleTarget = renameStyleTarget;
-window.deleteStyleTarget = deleteStyleTarget;
-window.addBreakpoint = addBreakpoint;
-window.renameBreakpointKey = renameBreakpointKey;
-window.deleteBreakpointKey = deleteBreakpointKey;
-window.addAnimation = addAnimation;
-window.addKeyFrame = addKeyFrame;
-window.renameAnimation = renameAnimation;
-window.deleteAnimation = deleteAnimation;
-window.renameKeyFrame = renameKeyFrame;
-window.deleteKeyFrame = deleteKeyFrame;
-window.deleteStyleProp = deleteStyleProp;
-window.clearStyles = clearStyles;
-window.styleModal = styleModal;
-window.addPseudo = addPseudo;
-window.renamePseudo - renamePseudo;
-window.deletePseudo - deletePseudo;
 
-window.html2json = html2json;
-window.json2html = json2html;
-window.saveState = saveState;
-window.undo = undo;
-window.redo = redo;
-window.addLibrary = addLibrary;
-window.fetchSuggestions = fetchSuggestions;
-window.customCode = customCode;
-window.removeScript = removeScript;
-window.removeScripts = removeScripts;
-window.loadScript = loadScript;
 window.loadScripts = loadScripts;
-window.executeQuery = executeQuery;
-window.toggleCollapse = toggleCollapse;
-window.foldAllLayers = foldAllLayers;
-window.hideAllLayers = hideAllLayers;
-window.toggleVisible = toggleVisible;
-window.selectedBlock = selectedBlock;
-window.collectSelectedIDs = collectSelectedIDs;
-window.clearAllSelections = clearAllSelections;
-window.clearSelection = clearSelection;
-window.findLayerById = findLayerById;
-window.canAcceptChildren = canAcceptChildren;
-window.addBlock = addBlock;
-window.deleteLayers = deleteLayers;
-window.removeLayerById = removeLayerById;
-window.cloneLayers = cloneLayers;
-window.cloneLayerObject = cloneLayerObject;
-window.cutLayers = cutLayers;
-window.copyLayers = copyLayers;
-window.pasteLayers = pasteLayers;
-window.removeAttributeFromLayers = removeAttributeFromLayers;
-window.removeProp = removeProp;
-window.emptyChildren = emptyChildren;
-window.updateElement = updateElement;
-window.updateImageMedia = updateImageMedia;
-window.updateAudioMedia = updateAudioMedia;
 window.checkApiConnection = checkApiConnection;
 window.fetchIconifySvg = fetchIconifySvg;
 window.searchIcons = searchIcons;
 window.updateSvgMedia = updateSvgMedia;
 window.handleIconSearch = handleIconSearch;
-window.selectIcon = selectIcon;
 window.updateMediaSource = updateMediaSource;
 window.addAttribute = addAttribute;
-window.copyToClipboard = copyToClipboard;
-window.collectComponents = collectComponents;
-window.addComponent = addComponent;
-window.deleteComponent = deleteComponent;
-
-window.generateId = generateId;
-window.resizeCanvas = resizeCanvas;
-window.rotateCanvas = rotateCanvas;
-window.getIFrameClientSize = getIFrameClientSize;
 
 window.handleLogoChange = handleLogoChange;
-window.fileToBase64 = fileToBase64;
-window.newProject = newProject;
-window.importJSON = importJSON;
-window.importProject = importProject;
-window.getFileNameAndType = getFileNameAndType;
-window.fetchResources = fetchResources;
 window.getBase64Media = getBase64Media;
 window.downloadJSON = downloadJSON;
 window.getFile = getFile;
 window.downloadProject = downloadProject;
 window.share = share;
 window.screenshot = screenshot;
-window.renderPreview = renderPreview;
-window.detectOperatingSystem = detectOperatingSystem;
 
 // Once dom has loaded init functions
 document.addEventListener('DOMContentLoaded', function() {
