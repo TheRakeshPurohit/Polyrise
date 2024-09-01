@@ -40,7 +40,7 @@ let app = {
     href: 'https://michaelsboost.com/',
     src: 'imgs/author.jpg'
   },
-  version: '1.0.1',
+  version: '1.0.2',
   url: 'https://github.com/michaelsboost/Polyrise/',
   license: 'https://github.com/michaelsboost/Polyrise/blob/gh-pages/LICENSE'
 }
@@ -1734,7 +1734,8 @@ window.addAttribute = attr => {
       // Iterate over each attribute and add it if it doesn't exist
       saveState();
       attrs.forEach(attribute => {
-        const [key, value] = attribute.split('=').map(s => s.trim());
+        let [key, value] = attribute.split('=').map(s => s.trim());
+        if (key === 'id') value = generateId();
 
         if (!(key in layer.props)) {
           layer.props[key] = value !== undefined ? value : "";
@@ -1746,7 +1747,6 @@ window.addAttribute = attr => {
       saveState();
     }
   });
-  document.querySelector('dialog[open]').querySelector('header > button').onclick();
 }
 function LayerTree() {
   // Function to render each layer recursively
