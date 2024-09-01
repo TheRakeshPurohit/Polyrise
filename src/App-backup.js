@@ -34,7 +34,7 @@ function onChange(target, callback, path = []) {
 let app = {
   name: 'Polyrise',
   summary: "Free Mobile Website Builder!",
-  description: "Create awesome responsive websites. Easy and fast - No coding! Free for commercial use.",
+  description: "Design with Freedom, Build with Power. Free for personal and commercial use.",
   author: {
     name: 'Michael Schwartz',
     href: 'https://michaelsboost.com/',
@@ -517,16 +517,11 @@ let d = {
         type: "image",
         code: `<figure>
   <picture>
-    <!-- For high-resolution screens or larger viewports -->
-    <source media="(min-width: 800px)" srcset="https://www.gstatic.com/webp/gallery/4.sm.webp" type="image/webp">
-    <!-- For medium-sized viewports -->
-    <source media="(min-width: 500px)" srcset="https://www.gstatic.com/webp/gallery/4.sm.webp" type="image/webp">
-    <!-- Fallback for smaller viewports or if WebP is not supported -->
-    <img src="https://www.gstatic.com/webp/gallery/4.sm.jpg" alt="${app.name}">
+    <img src="https://cdn.pixabay.com/photo/2015/10/16/19/18/balloon-991680_1280.jpg" alt="${app.name}">
   </picture>
   <figcaption>
     <span>Image courtesy of </span>
-    <a href="https://developers.google.com/speed/webp/gallery" target="_blank">Google Developer's</a>
+    <a href="https://pixabay.com/photos/balloon-heart-love-red-romantic-991680/" target="_blank">Pixabay.com</a>
     <span>.</span>
   </figcaption>
 </figure>
@@ -2316,6 +2311,63 @@ function Inspector() {
   </div>`;
   };
 
+  const generateStylePropertiesSection = () => {
+    let styles = '';
+    let styleKey = null;
+
+    if (commonLayerTag) {
+      Object.keys(commonLayerTag).forEach(layerKey => {
+        const layer = commonLayerTag[layerKey];
+        styleKey = layer.style;
+      });
+    }
+
+    let obj = project.css.styles;
+    const detectStylesPropTarget = ['base', 'pseudos'];
+    if (detectStylesPropTarget.includes(data.stylesPropTarget)) {
+      Object.keys(obj).forEach(key => {
+        if (styleKey === key || data.stylesTarget == key) {
+          if (data.stylesPropTarget === 'pseudos') {
+            const index = data.pseudosSelectorIndex;
+            if (data.pseudosSelector) {
+              if (obj[key].pseudos[index].styles) {
+                styles += processStyles(obj[key].pseudos[index].styles, `project.css.styles['${key}'].pseudos['${index}'].styles`, key);
+              }
+            }
+          } else {
+            if (obj[key][data.stylesPropTarget]) {
+              styles += processStyles(obj[key][data.stylesPropTarget], `project.css.styles['${key}']['${data.stylesPropTarget}']`, key);
+            }
+          }
+        }
+      });
+    }
+
+    let stylesObj = 'project.css.styles[data.stylesTarget][data.stylesPropTarget]';
+    if (data.stylesPropTarget === "pseudos") {
+      stylesObj = 'project.css.styles[data.stylesTarget][data.stylesPropTarget][data.pseudosSelectorIndex].styles';
+    }
+
+    return `<div class="border-0 border-b border-solid pb-2 mb-4 ${project.dark ? "border-gray-800" : "border-gray-200"}">
+      <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize">
+        <button class="${buttonItemClass}" style="color: unset;" onclick="data.stylePropsCollapsed = !data.stylePropsCollapsed;">
+          style properties
+        </button>
+        <button 
+          class="${buttonAddItemClass}" 
+          style="color: unset;" 
+          onclick="addStylePropModal('${styleKey}', ${stylesObj});">
+          <svg class="w-3" viewBox="0 0 576 512" style="color: unset;">
+            <path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize ${data.stylePropsCollapsed ? 'hidden' : ''}">
+        ${styles}
+      </div>
+    </div>`;
+  };
+
   const generateBreakpointsSection = () => {
     if (!commonLayerTag) data.stylesTarget = null;
     let styles = '';
@@ -2712,63 +2764,6 @@ function Inspector() {
   </div>`;
   };
 
-  const generateStylePropertiesSection = () => {
-    let styles = '';
-    let styleKey = null;
-
-    if (commonLayerTag) {
-      Object.keys(commonLayerTag).forEach(layerKey => {
-        const layer = commonLayerTag[layerKey];
-        styleKey = layer.style;
-      });
-    }
-
-    let obj = project.css.styles;
-    const detectStylesPropTarget = ['base', 'pseudos'];
-    if (detectStylesPropTarget.includes(data.stylesPropTarget)) {
-      Object.keys(obj).forEach(key => {
-        if (styleKey === key || data.stylesTarget == key) {
-          if (data.stylesPropTarget === 'pseudos') {
-            const index = data.pseudosSelectorIndex;
-            if (data.pseudosSelector) {
-              if (obj[key].pseudos[index].styles) {
-                styles += processStyles(obj[key].pseudos[index].styles, `project.css.styles['${key}'].pseudos['${index}'].styles`, key);
-              }
-            }
-          } else {
-            if (obj[key][data.stylesPropTarget]) {
-              styles += processStyles(obj[key][data.stylesPropTarget], `project.css.styles['${key}']['${data.stylesPropTarget}']`, key);
-            }
-          }
-        }
-      });
-    }
-
-    let stylesObj = 'project.css.styles[data.stylesTarget][data.stylesPropTarget]';
-    if (data.stylesPropTarget === "pseudos") {
-      stylesObj = 'project.css.styles[data.stylesTarget][data.stylesPropTarget][data.pseudosSelectorIndex].styles';
-    }
-
-    return `<div class="border-0 border-b border-solid pb-2 mb-4 ${project.dark ? "border-gray-800" : "border-gray-200"}">
-      <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize">
-        <button class="${buttonItemClass}" style="color: unset;" onclick="data.stylePropsCollapsed = !data.stylePropsCollapsed;">
-          style properties
-        </button>
-        <button 
-          class="${buttonAddItemClass}" 
-          style="color: unset;" 
-          onclick="addStylePropModal('${styleKey}', ${stylesObj});">
-          <svg class="w-3" viewBox="0 0 576 512" style="color: unset;">
-            <path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path>
-          </svg>
-        </button>
-      </div>
-      <div class="grid grid-cols-2 gap-1 items-center py-2 capitalize ${data.stylePropsCollapsed ? 'hidden' : ''}">
-        ${styles}
-      </div>
-    </div>`;
-  };
-
   const generateAttributesSection = () => {
     if (selectedLayers.length === 0) return '';
     
@@ -3048,12 +3043,12 @@ function Inspector() {
       ${generatePreviewSize()}
       ${generateRootVariablesSection()}
       ${generateStylesSection()}
+      ${data.stylesTarget ? generateStylePropertiesSection() : ''}
       ${data.stylesTarget ? generateBreakpointsSection() : ''}
       ${data.breakpointKey ? generateBreakpointStylesSection() : ''}
       ${data.stylesTarget && data.stylesPropTarget === "pseudos" ? generatePseudosSection() : ''}
       ${data.stylesTarget ? generateAnimationsSection() : ''}
       ${data.animationTarget ? generateAnimationPropertySection() : ''}
-      ${data.stylesTarget ? generateStylePropertiesSection() : ''}
       ${generateAttributesSection()}
     </div>
   `;
@@ -6238,7 +6233,21 @@ window.canAcceptChildren = layer => {
 }
 window.addBlock = html => {
   saveState(); // Save state before making changes
-  const newBlocks = html2json(html); // Convert HTML to JSON
+
+  // Function to assign an ID to each new block
+  const assignIds = (blocks, callback) => {
+    blocks.forEach(block => {
+      block.id = generateId(); // Assign a new ID
+      if (block.children) {
+        assignIds(block.children); // Recursively assign IDs to children if they exist
+      }
+    });
+
+    if (callback && typeof callback === 'function') {
+      callback(); // Call the callback function after all IDs have been assigned
+    }
+  };
+
   if (data.selectedLayerIds.length > 0) {
     // If user has multiple layers selected
     data.selectedLayerIds.forEach(id => {
@@ -6250,19 +6259,29 @@ window.addBlock = html => {
           // Ensure `layer.children` is initialized
           layer.children = layer.children || [];
 
-          // Add new blocks
-          newBlocks.forEach(newBlock => layer.children.push(newBlock));
+          // Assign IDs and then push new blocks
+          const newBlocks = html2json(html); // Convert HTML to JSON
+          assignIds(newBlocks, () => {
+            newBlocks.forEach(newBlock => {
+              layer.children.push(newBlock); // Push new block after ID assignment
+            });
+          });
         }
       }
     });
   } else {
     // If user has no layers selected, add to the root layer structure
-    newBlocks.forEach(newBlock => project.html.push(newBlock));
+    const newBlocks = html2json(html); // Convert HTML to JSON
+    assignIds(newBlocks, () => {
+      newBlocks.forEach(newBlock => project.html.push(newBlock)); // Push new block after ID assignment
+    });
   }
+
   clearAllSelections();
   saveState(); // Save state after making changes
   renderPreview();
-}
+};
+
 window.deleteLayers = () => {
   saveState(); // Save state before making changes
   data.editorNavState = true;
@@ -7255,6 +7274,7 @@ window.newProject = () => {
           obj.meta = frameworks[`${string}`].meta;
           importJSON(obj);
           data.menuDialog = null;
+          App.render('#app');
         }
       }
     }

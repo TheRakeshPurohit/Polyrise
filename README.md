@@ -1,10 +1,10 @@
 # Polyrise
-Free Mobile Website Builder! Create awesome responsive websites. Easy and fast - No coding! Free for commercial use.
+Free Mobile Website Builder! Create awesome responsive websites. Easy and fast - No coding! Free for personal and commercial use.
 
 ![](https://raw.githubusercontent.com/michaelsboost/Polyrise/gh-pages/imgs/header.png)
 
 ### Version
-1.0.0
+1.0.1
 
 ### Tech
 
@@ -15,6 +15,8 @@ Polyrise uses a number of open source projects to work properly:
 * [JSZip](https://stuk.github.io/jszip/) - package zip files in javascript
 * [FileSaver.js](https://github.com/eligrey/FileSaver.js/) - Client-side solution for saving files
 * [html2canvas](https://html2canvas.hertzen.com/) - Used for full website screenshots
+* [Openverse Api](https://docs.openverse.org/api/guides/documentation.html) - Used for users to easily search for images and audio files to add to or update their project.
+* [Iconify Api](https://iconify.design/docs/api/) - Used for users to easily search for vector graphics (svgs) to add to or update their project.
 
 ### License
 MIT

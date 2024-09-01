@@ -34,7 +34,7 @@ function onChange(target, callback, path = []) {
 let app = {
   name: 'Polyrise',
   summary: "Free Mobile Website Builder!",
-  description: "Create awesome responsive websites. Easy and fast - No coding! Free for commercial use.",
+  description: "Design with Freedom, Build with Power. Free for personal and commercial use.",
   author: {
     name: 'Michael Schwartz',
     href: 'https://michaelsboost.com/',
