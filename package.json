@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build:css": "postcss src/style.css src/editor.css --dir dist",
+    "build:css": "postcss src/style.css -o dist/style.css",
     "build:js": "esbuild src/App.js --bundle --minify --sourcemap --outfile=dist/App.min.js",
     "build": "npm run build:css && npm run build:js",
     "serve": "http-server -c-1 -p 8081"
