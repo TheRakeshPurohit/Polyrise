@@ -786,7 +786,7 @@ const icons = (function() {
 })();
 
 // Reactive objects
-const project = onChange(p, (property, oldValue, newValue) => {
+window.project = onChange(p, (property, oldValue, newValue) => {
   if (oldValue !== newValue) {
     localStorage.setItem('Polyrise', JSON.stringify(project));
     App.render('#app');
@@ -807,7 +807,7 @@ const project = onChange(p, (property, oldValue, newValue) => {
     }
   }
 });
-const data = onChange(d, (property, oldValue, newValue) => {
+window.data = onChange(d, (property, oldValue, newValue) => {
   // Only render if the actual value has changed
   if (oldValue !== newValue) {
     const string = property.toString();
@@ -822,8 +822,6 @@ const data = onChange(d, (property, oldValue, newValue) => {
     }
   }
 });
-window.project = project;
-window.data = data;
 
 // Components
 function LeftMenubar() {
@@ -1369,7 +1367,7 @@ function Settings() {
   </dialog>`;
   return settingsHTML;
 }
-function librariesDialog() {
+window.librariesDialog = () => {
   let libraries = `<div class="p-4">
           <input 
             id="searchInput" 
@@ -1389,7 +1387,7 @@ function librariesDialog() {
     }
   });
 }
-function attributesModal() {
+window.attributesModal = () => {
   const globalAttributes = [
     "accesskey", "autocapitalize", "autofocus", "class", "contenteditable", 
     "dir", "exportparts", "hidden", "id", "inert", "inputmode", "is", 
@@ -1727,7 +1725,7 @@ function attributesModal() {
   });
 }
 // Helper function to add an attribute to the element
-function addAttribute(attr) {
+window.addAttribute = attr => {
   if (!attr) return;
   // Split the attributess into individual attributes
   const attrs = attr.toLowerCase().split(',').map(q => q.trim().toLowerCase());
@@ -3112,7 +3110,7 @@ function editorNav() {
       ${icons.paste}
     </button>`;
 }
-const Modal = {
+window.Modal = {
   render({
     large,
     title = "Are you sure you want to proceed?",
@@ -3270,7 +3268,7 @@ function Blocks() {
   
   return html;
 }
-const App = {
+window.App = {
   initialRender: true,
   render(container) {
     const buttonClass = "border-0 bg-transparent py-1";
@@ -3501,7 +3499,6 @@ const App = {
     diffNodes(currentDoc, newDoc);
   }
 }
-window.App = App;
 window.emptyStorage = () => {
   Modal.render({
     title: "Are you sure you want to empty storage?",
@@ -5684,7 +5681,7 @@ window.removeScripts = scripts => {
     if (script) script.remove();
   });
 }
-async function loadScript(scriptUrl) {
+window.loadScript = async scriptUrl => {
   return new Promise((resolve, reject) => {
     // Check if the script is already loaded
     const existingScript = document.querySelector(`script[src="${scriptUrl}"]`);
@@ -5701,7 +5698,7 @@ async function loadScript(scriptUrl) {
     document.body.appendChild(scriptElement); // Append the script to the body
   });
 }
-async function loadScripts(srcArray) {
+window.loadScripts = async srcArray => {
   return Promise.all(srcArray.map(loadScript));
 }
 
@@ -6525,7 +6522,7 @@ window.updateImageMedia = (id, type) => {
     }
   });
 }
-async function searchOpenverseImage(query) {
+window.searchOpenverseImage = async query => {
   const url = `https://api.openverse.org/v1/images?q=${encodeURIComponent(query)}`;
   const response = await fetch(url);
   if (response.ok) {
@@ -6684,7 +6681,7 @@ window.updateAudioMedia = (id, type) => {
     }
   });
 }
-async function searchOpenverseAudio(query) {
+window.searchOpenverseAudio = async query => {
   const url = `https://api.openverse.org/v1/audio?q=${encodeURIComponent(query)}`;
   const response = await fetch(url);
   if (response.ok) {
@@ -6695,7 +6692,7 @@ async function searchOpenverseAudio(query) {
     return [];
   }
 }
-async function updateMediaSource(event, type, element) {
+window.updateMediaSource = async (event, type, element) => {
   const file = event.target.files[0];
   if (!file) return; // If no file selected, return
 
@@ -6717,7 +6714,7 @@ async function updateMediaSource(event, type, element) {
     console.error('Error reading file:', error);
   }
 }
-async function checkApiConnection() {
+window.checkApiConnection = async () => {
   try {
     const response = await fetch('https://api.iconify.design/collections');
     if (response.ok) {
@@ -6728,7 +6725,7 @@ async function checkApiConnection() {
   }
   return false;
 }
-async function fetchIconifySvg(icon) {
+window.fetchIconifySvg = async icon => {
   const hosts = [
     `https://api.iconify.design/${icon}.svg`,
     `https://api.simplesvg.com/${icon}.svg`,
@@ -6751,7 +6748,7 @@ async function fetchIconifySvg(icon) {
 
   throw new Error("Icon not found or all hosts are unreachable.");
 }
-async function searchIcons(query) {
+window.searchIcons = async query => {
   const searchUrl = `https://api.iconify.design/search?query=${encodeURIComponent(query)}`;
   try {
     const response = await fetch(searchUrl);
@@ -6766,7 +6763,7 @@ async function searchIcons(query) {
   }
   return [];
 }
-async function updateSvgMedia(id, type) {
+window.updateSvgMedia = async (id, type) => {
   let title = "Replace the SVG";
   const target = findLayerById(id, project.html).layer;
   let display = "";
@@ -6839,7 +6836,7 @@ async function updateSvgMedia(id, type) {
     }
   });
 }
-async function handleIconSearch(event) {
+window.handleIconSearch = async event => {
   const query = event.target.value;
   const iconResultsElement = document.getElementById('iconResults');
   if (query.length > 2) {
@@ -7023,7 +7020,7 @@ window.getIFrameClientSize = () => {
 }
 
 // save functions
-async function handleLogoChange(event) {
+window.handleLogoChange = async event => {
   const file = event.target.files[0];
   if (!file) return; // If no file selected, return
 
@@ -7064,6 +7061,7 @@ window.importJSON = obj => {
     project['components'] = obj.components;
   }
   project.html = obj.html;
+  App.render('#app');
 }
 window.newProject = () => {
   const obj = {
@@ -7528,7 +7526,7 @@ window.fetchResources = obj => {
     return null; // Or handle the error in an appropriate way
   }
 }
-async function getBase64Media(mediaUrl) {
+window.getBase64Media = async mediaUrl => {
   const response = await fetch(mediaUrl);
   const blob = await response.blob();
   return new Promise((resolve, reject) => {
@@ -7628,7 +7626,7 @@ window.renderStyles = styles => {
 
   return css;
 }
-async function downloadJSON() {
+window.downloadJSON = async () => {
   try {
     await loadScript("libraries/jszip/FileSaver.min.js");
     let blob = new Blob([JSON.stringify(project, null, 2)], {type: "application/json"});
@@ -7641,7 +7639,7 @@ async function downloadJSON() {
     removeScript("libraries/jszip/FileSaver.min.js");
   }
 }
-async function getFile(url, callback) {
+window.getFile = async (url, callback) => {
   try {
     const response = await fetch(url);
     if (!response.ok) throw new Error("Network response was not ok");
@@ -7665,7 +7663,7 @@ window.minifyCSS = source => {
   minified = minified.replace(/;}/g, '}');
   return minified;
 }
-async function downloadProject() {
+window.downloadProject = async () => {
   try {
     await loadScripts([
       "libraries/jszip/jszip.min.js",
@@ -8145,7 +8143,7 @@ ${(project.pwa ? swinit : '')}
     removeScripts(scriptsToRemove);
   }
 }
-async function share() {
+window.share = async () => {
   try {
     if (navigator.onLine) {
       const shareProject = {
@@ -8195,7 +8193,7 @@ ${json2css(project.css)}`,
   }
 }
 
-async function screenshot() {
+window.screenshot = async () => {
   const iframe = document.getElementById('iframe');
   const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
 
@@ -8331,7 +8329,7 @@ window.detectOperatingSystem = () => {
 }
 
 // Diffing algorithm to update ui when changes occur
-function diffNodes(oldNode, newNode) {
+window.diffNodes = (oldNode, newNode) => {
   if (!oldNode || !newNode) {
     return;
   }
@@ -8410,29 +8408,6 @@ function diffNodes(oldNode, newNode) {
     oldNode.appendChild(newChild.cloneNode(true));
   });
 }
-
-// Make functions available in global space
-window.Modal = Modal;
-window.librariesDialog = librariesDialog;
-window.attributesModal = attributesModal;
-window.addAttribute = addAttribute;
-
-window.loadScripts = loadScripts;
-window.checkApiConnection = checkApiConnection;
-window.fetchIconifySvg = fetchIconifySvg;
-window.searchIcons = searchIcons;
-window.updateSvgMedia = updateSvgMedia;
-window.handleIconSearch = handleIconSearch;
-window.updateMediaSource = updateMediaSource;
-window.addAttribute = addAttribute;
-
-window.handleLogoChange = handleLogoChange;
-window.getBase64Media = getBase64Media;
-window.downloadJSON = downloadJSON;
-window.getFile = getFile;
-window.downloadProject = downloadProject;
-window.share = share;
-window.screenshot = screenshot;
 
 // Once dom has loaded init functions
 document.addEventListener('DOMContentLoaded', function() {
