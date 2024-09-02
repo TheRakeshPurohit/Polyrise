@@ -8673,7 +8673,7 @@ document.addEventListener('DOMContentLoaded', function() {
     App.render('#app');
     getIFrameClientSize();
     // URL to the JSON file
-    const jsonFileUrl = '../cssQuickCommands.json';
+    const jsonFileUrl = 'cssQuickCommands.json';
 
     // Apply the CSS quick commands
     applyCssQuickCommands(jsonFileUrl);
