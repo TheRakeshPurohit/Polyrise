@@ -7229,7 +7229,7 @@ window.newProject = () => {
     'tailwind': {
       source: 'imgs/frameworks/tailwind.svg',
       libraries: [
-        "https://michaelsboost.com/TailwindCSSMod/tailwind-mod-noreset.min.js"
+        "https://michaelsboost.com/TailwindCSSMod/tailwind-mod.min.js"
       ],
       meta: ''
     },
