@@ -96,6 +96,7 @@ let d = {
   stylesTarget: null,
   animationTarget: null,
   animationKeyframe: null,
+  cssQuickCommands: {},
   defaultValues: {
     "animation": "none",
     "animation-delay": "0s",
@@ -807,14 +808,14 @@ window.data = onChange(d, (property, oldValue, newValue) => {
   if (oldValue !== newValue) {
     const string = property.toString();
     if (string === "stylesTarget") {
-      if (data.stylesTarget && data.shiftKey && data.cmdKey) {
-        clearAllSelections();
-        App.render('#app');
-        collectSelectedIDs(project.html);
+      if (data.stylesTarget) {
+        if (data.shiftKey) {
+          data.selectedLayerIds = [];
+          selectLayersByStyleRef(data.stylesTarget, project.html);
+        }
       }
-    } else {
-      App.render('#app');
     }
+    App.render('#app');
   }
 });
 
@@ -1719,35 +1720,6 @@ window.attributesModal = () => {
     }
   });
 }
-// Helper function to add an attribute to the element
-window.addAttribute = attr => {
-  if (!attr) return;
-  // Split the attributess into individual attributes
-  const attrs = attr.toLowerCase().split(',').map(q => q.trim().toLowerCase());
-
-  data.selectedLayerIds.forEach(id => {
-    const { layer } = findLayerById(id, project.html);
-    if (layer) {
-      // Initialize layer.props if it's undefined
-      if (!layer.props) layer.props = {};
-
-      // Iterate over each attribute and add it if it doesn't exist
-      saveState();
-      attrs.forEach(attribute => {
-        let [key, value] = attribute.split('=').map(s => s.trim());
-        if (key === 'id') value = generateId();
-
-        if (!(key in layer.props)) {
-          layer.props[key] = value !== undefined ? value : "";
-        } else if (value !== undefined) {
-          // If the attribute already exists, update its value
-          layer.props[key] = value;
-        }
-      });
-      saveState();
-    }
-  });
-}
 function LayerTree() {
   // Function to render each layer recursively
   function renderLayer(layer) {
@@ -2207,9 +2179,6 @@ function Inspector() {
     if (commonLayerTag) {
       Object.keys(commonLayerTag).forEach(layerKey => {
         const layer = commonLayerTag[layerKey];
-        if (!data.stylesTarget) {
-          data.stylesTarget = layer.style;
-        }
       });
     }
     
@@ -2247,13 +2216,7 @@ function Inspector() {
         aria-label="set style target to ${key}"
         name="set style target to ${key}"
         class="${buttonClass.split('capitalize').join('')} p-2 border ${project.dark ? "border-gray-700" : "border-gray-300"}" ${activeStyle ? '' : 'style="color: unset;"'}
-        onclick="
-          data.stylesTarget = this.textContent.toString();
-          if (!data.cmdKey || !data.shiftKey) {
-            clearAllSelections();
-          }
-          data.stylesTarget = this.textContent.toString();
-        ">${key}</button>`;
+        onclick="data.stylesTarget = this.textContent.toString();">${key}</button>`;
     });
 
     return `<div class="border-0 border-b border-solid pb-2 mb-4 ${project.dark ? "border-gray-800" : "border-gray-200"}">
@@ -3055,7 +3018,6 @@ function Inspector() {
 
   return inspectorHtml;
 }
-
 function editorNav() {
   const buttonClass = "border-0 bg-transparent py-1";
 
@@ -3196,7 +3158,7 @@ function Blocks() {
     componentItem += `
       <div class="flex justify-between w-full h-full border border-solid rounded-md ${project.dark ? "border-gray-800" : "border-gray-200"}">
         <button 
-          class="bg-transparent border-0 text-xs capitalize m-0 py-0 px-2"
+          class="bg-transparent border-0 text-xs capitalize m-0 py-4 px-2"
           style="color: unset;"
           onclick="addBlock(project.components[${index}].code)"
         >
@@ -3204,7 +3166,7 @@ function Blocks() {
         </button>
 
         <button 
-          class="bg-transparent border-0 text-xs capitalize m-0 py-0 px-2"
+          class="bg-transparent border-0 text-xs capitalize m-0 py-4 px-2"
           style="color: unset;"
           onclick="deleteComponent('${index}')"
         >
@@ -3494,225 +3456,6 @@ window.App = {
     diffNodes(currentDoc, newDoc);
   }
 }
-window.emptyStorage = () => {
-  Modal.render({
-    title: "Are you sure you want to empty storage?",
-    content: '<div class="p-4 text-center">All current data will be lost.</div>',
-    onConfirm() {
-      // Clear local storage
-      localStorage.removeItem('Polyrise');
-    
-      // Clear session storage specific to Polyrise (if you use a specific key)
-      sessionStorage.removeItem('Polyrise');
-    
-      // Clear cookies specific to Polyrise
-      document.cookie.split(";").forEach(function(c) {
-        if (c.trim().startsWith('Polyrise')) {
-          document.cookie = c.trim().split("=")[0] + 
-                            '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
-        }
-      });
-    
-      // Clear service worker caches specific to Polyrise
-      if ('caches' in window) {
-        caches.keys().then(function(names) {
-          names.forEach(function(name) {
-            if (name === 'Polyrise-cache') {
-              caches.delete(name);
-            }
-          });
-        });
-      }
-    
-      // Unregister service workers specific to Polyrise
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          registrations.forEach(function(registration) {
-            if (registration.scope.includes('Polyrise')) {
-              registration.unregister();
-            }
-          });
-        });
-      }
-    
-      location.reload();
-    }
-  });
-}
-window.updateVersionPart = (part, value) => {
-  const versionParts = project.version.split('.');
-  if (part === 'major') {
-    versionParts[0] = value;
-  } else if (part === 'minor') {
-    versionParts[1] = value;
-  } else if (part === 'patch') {
-    versionParts[2] = value;
-  }
-  project.version = versionParts.join('.');
-}
-window.commandPalette = () => {
-  let buttonClass = `text-xs w-auto px-3 py-2 m-0 capitalize rounded-md bg-transparent border ${project.dark ? 'border-gray-600' : 'border-gray-400'}`;
-  let commands = {
-    "fold all": "f",
-    "unfold all": "u",
-    "hide all": "h",
-    "show all": "s",
-    "empty children": "e",
-    "clear all selections": ""
-  };
-
-  // Generate buttons HTML from the commands object
-  let buttonsHtml = Object.keys(commands).map(command => {
-    return `<button 
-  class="${buttonClass}"
-  style="color: unset;"
-  onclick="
-    const emuqfdoxq = document.getElementById('emuqfdoxq').checked;
-    executeQuery('${commands[command]}', emuqfdoxq);
-    document.querySelector('dialog[open]').querySelector('header > button').onclick();
-  "
->
-  ${command}
-</button>`;
-  }).join(''); // Join the array into a single string
-
-  const guide = `<div class="font-thin text-xs">
-  - <strong class="text-sm">Enter a Query</strong>: <br/>
-    Input a query in the format <code>t=tagname</code>, <code>t=.classname</code>, <code>t=[attribute=value]</code>, or <code>t=[id]</code>. You can also use pseudo-classes with the <code>t=</code> prefix like <code>t=.classname:first-child</code>.<br/><br/>
-
-  - <strong class="text-sm">Multiple Queries</strong>: <br/>
-    Separate multiple queries with a comma (e.g., <code>t=li, t=.name</code>).<br/><br/>
-
-  - <strong class="text-sm">Pseudo-Classes</strong>: <br/>
-    You can use pseudo-classes to refine your selection. Supported pseudo-classes include:<br/>
-    <ul class="mt-4">
-      <li><code>:first-child</code> - Selects the first child element.</li>
-      <li><code>:last-child</code> - Selects the last child element.</li>
-      <li><code>:nth-child(n)</code> - Selects the nth child element.</li>
-      <li><code>:nth-last-child(n)</code> - Selects the nth last child element.</li>
-      <li><code>:only-child</code> - Selects elements that are the only child.</li>
-      <li><code>:empty</code> - Selects elements without children.</li>
-      <li><code>:first-of-type</code> - Selects the first element of its type.</li>
-      <li><code>:last-of-type</code> - Selects the last element of its type.</li>
-      <li><code>:nth-of-type(n)</code> - Selects the nth element of its type.</li>
-      <li><code>:nth-last-of-type(n)</code> - Selects the nth last element of its type.</li>
-      <li><code>:only-of-type</code> - Selects elements of its type that are the only one.</li>
-    </ul><br/>
-
-  - <strong class="text-sm">Targeting Selections</strong>: <br/>
-    Use the <code>t=</code> prefix to specify the type of selection:<br/>
-    <ul class="mt-4">
-      <li><code>t=tagname</code> - Targets elements with the specified tag.</li>
-      <li><code>t=.classname</code> - Targets elements with the specified class.</li>
-      <li><code>t=[attribute]</code> - Targets elements with the specified attribute (without defining its value).</li>
-      <li><code>t=[attribute=value]</code> - Targets elements with the specified attribute and value.</li>
-      <li><code>t=.classname:pseudo-class</code> - Targets elements with the specified class and pseudo-class.</li>
-    </ul><br/>
-
-  - <strong class="text-sm">Operation Prefixes</strong>: <br/>
-    Use the following prefixes to perform operations on the targeted elements:<br/>
-    <ul class="mt-4">
-      <li><code>r=</code> - Remove targeted elements. For example, <code>r=tagname</code> will remove all elements matching the specified tag.</li>
-      <li><code>e=</code> - Empty all children from the targeted elements. For example, <code>e=.name</code> will empty the children of all elements with the class <code>name</code>.</li>
-      <li><code>c=</code> - Apply operations to the children of the targeted elements. For example, <code>c=tagname</code> will select the children of currently selected elements that match the specified tag.</li>
-      <li><code>mv=</code> - Move targeted elements. For example, <code>mv=tagname</code> will cut the currently selected elements and paste them as elements matching the specified tag.</li>
-      <li><code>rs=</code> - Remove styles from the project as well as targeted elements. For example, <code>rs=styleName</code> will clear the specified style from all elements that currently have it applied.</li>
-    </ul><br/>
-
-  - <strong class="text-sm">Special Commands</strong>: <br/>
-    Use special commands to quickly fold, unfold, hide, show all layers, or empty all children from selections. The supported commands are:<br/>
-    <ul class="mt-4">
-      <li><code>f</code> - Collapse all layers.</li>
-      <li><code>u</code> - Uncollapse all layers.</li>
-      <li><code>h</code> - Hide all layers.</li>
-      <li><code>s</code> - Show all layers.</li>
-      <li><code>e</code> - Empty all children from selections.</li>
-    </ul>
-    If no query is provided and you click "Confirm", all current selections will be cleared automatically. (You can also do this using the shortcut <code>Shift+Ctrl+A</code> on Windows or <code>Shift+Cmd+A</code> on Mac)<br/><br/>
-
-  - <strong class="text-sm">Replace Current Selection</strong>: <br/>
-    Toggle the switch to decide whether to replace the current selection or add to it.<br/>
-    You can also hold the <code>Ctrl</code> key on Windows (<code>Cmd</code> key on Mac) to do this as well to target replacing current selection.<br/><br/>
-
-  - <strong class="text-sm">Execute</strong>: <br/>
-    Press Enter to run the command or query.<br/><br/>
-
-  - <strong class="text-sm">Close</strong>: <br/>
-    The palette will close automatically after executing a command.<br/>
-    You can also open it using the shortcut <code>Ctrl+Shift+P</code> on Windows or <code>Cmd+Shift+P</code> on Mac.<br/>
-    You can also use the <code>Esc</code> key to close every opened dialog.
-</div>`;
-
-  // Check if data.commandPalette is true
-  if (!data.commandPalette) {
-    data.commandPalette = true;
-
-    // Modal rendering code
-    Modal.render({
-      title: "Command Palette...",
-      content: `
-        <div class="p-4 grid grid-cols-1 gap-4">
-          <input
-            id="olphbh94a"
-            type="text"
-            placeholder="Enter a query (e.g., tag=li:first-child, class=name)..."
-            class="rounded-full border p-2 flex-grow"
-            style="margin: 0;"
-            onkeydown="
-              if (event.key === 'Enter') {
-                executeQuery(this.value.trim(), data.replaceCurrentSelection);
-                document.querySelector('dialog[open]').querySelector('header > button').onclick();
-              }
-            "
-          />
-          <div class="flex items-center">
-            <input 
-              type="checkbox" 
-              role="switch" 
-              id="emuqfdoxq" 
-              class="mr-2" 
-              ${data.replaceCurrentSelection ? 'checked' : ''} 
-              onchange="data.replaceCurrentSelection = !data.replaceCurrentSelection;"
-            />
-            <label for="emuqfdoxq" class="select-none">Replace current selection</label>
-          </div>
-          <hr/>
-          <details class="flex items-center mb-0" ${data.commandsOpen ? 'open' : ''} ontoggle="
-            const detailsElement = this;
-            data.commandsOpen = detailsElement.hasAttribute('open');
-          ">
-          <summary>
-            Commands
-          </summary>
-          <code class="grid grid-cols-2 gap-2 mb-0 bg-transparent">
-            ${buttonsHtml}
-          </code>
-        </details>
-        <hr/>
-        <details class="mb-0" ${data.commandPaletteGuide ? 'open' : ''} ontoggle="
-            const detailsElement = this;
-            data.commandPaletteGuide = detailsElement.hasAttribute('open');
-          ">
-          <summary>
-            How to use the Command Palette:
-          </summary>
-          ${guide}
-        </details>
-      </div>`,
-      onLoad() {
-        document.getElementById('olphbh94a').focus();
-      },
-      onClose() {
-        data.commandPalette = null;
-      },
-      onConfirm() {
-        const query = document.getElementById('olphbh94a').value.trim();
-        executeQuery(query, data.replaceCurrentSelection);
-        data.commandPalette = null;
-      }
-    });
-  }
-}
 
 // Inspector functions
 window.modifyRootVariable = id => {
@@ -3926,6 +3669,9 @@ window.addStylePropModal = (id, obj) => {
           document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
         }
       "/>
+    </div>
+    <div class="text-center text-[.6rem]">
+      You can also apply styles using <a href="https://tailwindcss.com/" target="_blank">tailwind</a> classes as quick commands!
     </div>`;
 
   Modal.render({
@@ -3970,37 +3716,50 @@ window.addStylePropModal = (id, obj) => {
       };
     },
     onConfirm() {
-      const propertyTypeInput = document.getElementById('ool1zyibs').value;
+      const propertyTypeInput = document.getElementById('ool1zyibs').value.trim();
       const unit = document.getElementById('property-unit') ? document.getElementById('property-unit').value : '';
-      const defaultValue = defaultValues[propertyTypeInput] || defaultValues['default'];
-      const finalValue = unit ? `${defaultValue}${unit}` : defaultValue;
       const noUnit = ['opacity', 'z-index'];
-
+      const cssQuickCommands = data.cssQuickCommands;
+    
       if (propertyTypeInput) {
-        // Convert the first character to lowercase
-        const formattedPropertyType = propertyTypeInput.charAt(0).toLowerCase() + propertyTypeInput.slice(1);
+        // Check if the input matches a quick command
+        if (cssQuickCommands[propertyTypeInput]) {
+          const quickCommand = cssQuickCommands[propertyTypeInput];
+          const properties = quickCommand.split(';').filter(Boolean);
 
-        const properties = formattedPropertyType.split(',').map(prop => prop.trim());
+          properties.forEach(propertyString => {
+            let [propertyType, userDefinedValue] = propertyString.split(':').map(str => str.trim());
+            propertyType = propertyType.toLowerCase();
+            obj[propertyType] = userDefinedValue;
+          });
 
-        properties.forEach(propertyType => {
-          const defaultValue = defaultValues[propertyType] || defaultValues['default'];
-          const finalValue = unit ? `${defaultValue}${unit}` : defaultValue;
+        } else {
+          // Split the input to separate properties and handle each individually
+          const properties = propertyTypeInput.split(',').map(prop => prop.trim());
 
-          // Detect if it already exists
-          if (obj[propertyType]) {
-            Modal.render({
-              title: "Unable to add property!",
-              content: '<div class="p-4 text-center">Property style already exists</div>'
-            });
-            return false;
-          }
+          properties.forEach(propertyString => {
+            let [propertyType, userDefinedValue] = propertyString.split('=').map(str => str.trim());
+            propertyType = propertyType.charAt(0).toLowerCase() + propertyType.slice(1);
 
-          if (noUnit.includes(propertyType)) {
-            obj[propertyType] = "1";
-          } else {
-            obj[propertyType] = finalValue;
-          }
-        });
+            let finalValue;
+
+            if (userDefinedValue) {
+              // Use the user-defined value
+              finalValue = userDefinedValue + (unit && !noUnit.includes(propertyType) ? unit : '');
+            } else {
+              // Use the default value if no value was provided
+              const defaultValue = defaultValues[propertyType] || defaultValues['default'];
+              finalValue = unit ? `${defaultValue}${unit}` : defaultValue;
+            }
+
+            // Apply the final value to the property
+            if (noUnit.includes(propertyType)) {
+              obj[propertyType] = userDefinedValue || "1";
+            } else {
+              obj[propertyType] = finalValue;
+            }
+          });
+        }
 
         App.render("#app");
         renderPreview();
@@ -4008,7 +3767,7 @@ window.addStylePropModal = (id, obj) => {
       } else {
         Modal.render({
           title: "Unable to add property!",
-          content: "Please select a property type."
+          content: "Please enter a valid CSS property or quick command."
         });
       }
     }
@@ -4836,6 +4595,55 @@ window.deletePseudo = () => {
     }
   });
 }
+window.fetchCssQuickCommands = async url => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching CSS quick commands:', error);
+  }
+}
+window.applyCssQuickCommands = async url => {
+  const cssQuickCommands = await fetchCssQuickCommands(url);
+
+  if (cssQuickCommands) {
+    // Assuming `data` is a global object where `cssQuickCommands` should be applied
+    data.cssQuickCommands = cssQuickCommands;
+  }
+}
+// Helper function to add an attribute to the element
+window.addAttribute = attr => {
+  if (!attr) return;
+  // Split the attributess into individual attributes
+  const attrs = attr.toLowerCase().split(',').map(q => q.trim().toLowerCase());
+
+  data.selectedLayerIds.forEach(id => {
+    const { layer } = findLayerById(id, project.html);
+    if (layer) {
+      // Initialize layer.props if it's undefined
+      if (!layer.props) layer.props = {};
+
+      // Iterate over each attribute and add it if it doesn't exist
+      saveState();
+      attrs.forEach(attribute => {
+        let [key, value] = attribute.split('=').map(s => s.trim());
+        if (key === 'id') value = generateId();
+
+        if (!(key in layer.props)) {
+          layer.props[key] = value !== undefined ? value : "";
+        } else if (value !== undefined) {
+          // If the attribute already exists, update its value
+          layer.props[key] = value;
+        }
+      });
+      saveState();
+    }
+  });
+}
 
 // editor functions
 window.html2json = input => {
@@ -4865,7 +4673,7 @@ window.html2json = input => {
     const obj = {
       tag: element.tagName.toLowerCase(),
       id: generateId(),
-      styles: "",
+      style: "",
       state: {
         "collapsed": false,
         "visible": true,
@@ -5009,6 +4817,20 @@ window.css2json = css => {
     animations: {},
     breakpoints: {}
   };
+
+  // Handle @import statements
+  const importRegex = /@import\s+url\(['"]([^'"]+)['"]\);/g;
+  let importMatch;
+
+  while ((importMatch = importRegex.exec(css)) !== null) {
+    const importUrl = importMatch[1].trim();
+    if (project.libraries && !project.libraries.includes(importUrl)) {
+      project.libraries.push(importUrl);
+    }
+  }
+
+  // Remove @import statements from CSS
+  css = css.replace(importRegex, '');
 
   // Function to remove comments from CSS
   function removeComments(css) {
@@ -5277,7 +5099,6 @@ window.json2css = styles => {
 
   return css;
 }
-
 window.json2preprocessor = styles => {
   let css = '';
   let symbol = "";
@@ -5508,7 +5329,39 @@ window.mergeCSSJSON = (existingJSON, newJSON) => {
 
   return existingJSON;
 }
+window.fetchCssFile = async url => {
+  const response = await fetch(url);
+  return response.text();
+}
+window.generateCssQuickCommands = async url => {
+  const css = await fetchCssFile(url);
 
+  // Create a new CSSStyleSheet object
+  const stylesheet = new CSSStyleSheet();
+  await stylesheet.replace(css); // Replace with the CSS content
+
+  const cssQuickCommands = {};
+
+  // Iterate over all rules in the stylesheet
+  for (const rule of stylesheet.cssRules) {
+    // Skip pseudo-classes and animations
+    if (rule.type === CSSRule.STYLE_RULE &&
+        !rule.selectorText.includes(':') &&
+        !rule.selectorText.includes('@keyframes')) {
+
+      const className = rule.selectorText.replace('.', '');
+      if (className) {
+        const declarations = Array.from(rule.style)
+          .filter(prop => !prop.startsWith('animation') && !prop.startsWith('transition'))
+          .map(prop => `${prop}: ${rule.style[prop]};`)
+          .join(' ');
+        cssQuickCommands[className] = declarations;
+      }
+    }
+  }
+
+  return cssQuickCommands;
+}
 window.saveState = () => {
   // Save the current state to history
   const currentState = {
@@ -5584,6 +5437,7 @@ window.customCode = () => {
         code = minifyCSS(code);
         const newJSON = css2json(code);
         mergeCSSJSON(project.css, newJSON);
+        renderPreview();
       }
     }
   });
@@ -5908,8 +5762,8 @@ window.executeQuery = (queriesString, replaceSelection = true) => {
 
   queries.forEach(processQuery);
 }
-
 window.toggleCollapse = layerId => {
+  if (project.activePanel !== 'layers') project.activePanel = 'layers';
   let targetLayer = null;
   let parentLayer = null;
 
@@ -5973,6 +5827,7 @@ window.toggleCollapse = layerId => {
   }
 }
 window.foldAllLayers = (state = false) => {
+  if (project.activePanel !== 'layers') project.activePanel = 'layers';
   function collapseLayer(layer) {
     layer.state.collapsed = state;
     if (layer.children) layer.children.forEach(child => collapseLayer(child));
@@ -5981,6 +5836,7 @@ window.foldAllLayers = (state = false) => {
   project.html.forEach(layer => collapseLayer(layer));
 }
 window.hideAllLayers = (state = false) => {
+  if (project.activePanel !== 'layers') project.activePanel = 'layers';
   function hideLayer(layer) {
     layer.state.visible = !state;
     renderPreview();
@@ -5990,6 +5846,7 @@ window.hideAllLayers = (state = false) => {
   project.html.forEach(layer => hideLayer(layer));
 }
 window.toggleVisible = layerId => {
+  if (project.activePanel !== 'layers') project.activePanel = 'layers';
   let targetLayer = null;
   let parentLayer = null;
 
@@ -6053,6 +5910,7 @@ window.toggleVisible = layerId => {
   }
 }
 window.selectedBlock = layerId => {
+  if (project.activePanel !== 'layers') project.activePanel = 'layers';
   let targetLayer = null;
   let parentLayer = null;
 
@@ -6172,7 +6030,6 @@ window.selectedBlock = layerId => {
     return foundLayer;
   }
 }
-
 window.collectSelectedIDs = layers => {
   layers.forEach(layer => {
     if (layer.state.selected) {
@@ -6281,7 +6138,24 @@ window.addBlock = html => {
   saveState(); // Save state after making changes
   renderPreview();
 };
+window.selectLayersByStyleRef = (style, layers) => {
+  for (const layer of layers) {
+    // Deselect all layers
+    layer.state.selected = false;
 
+    // Check if the current layer matches the style reference
+    if (layer.style === style) {
+      data.selectedLayerIds.push(layer.id);
+      layer.state.selected = true;
+      // Continue searching in children even if the parent is selected
+    }
+
+    // Recursively check children if they exist
+    if (layer.children && layer.children.length > 0) {
+      selectLayersByStyleRef(style, layer.children);
+    }
+  }
+};
 window.deleteLayers = () => {
   saveState(); // Save state before making changes
   data.editorNavState = true;
@@ -6966,6 +6840,180 @@ window.deleteComponent = index => {
     console.error('Invalid index:', index);
   }
 }
+window.commandPalette = () => {
+  let buttonClass = `text-xs w-auto px-3 py-2 m-0 capitalize rounded-md bg-transparent border ${project.dark ? 'border-gray-600' : 'border-gray-400'}`;
+  let commands = {
+    "fold all": "f",
+    "unfold all": "u",
+    "hide all": "h",
+    "show all": "s",
+    "empty children": "e",
+    "clear all selections": ""
+  };
+
+  // Generate buttons HTML from the commands object
+  let buttonsHtml = Object.keys(commands).map(command => {
+    return `<button 
+  class="${buttonClass}"
+  style="color: unset;"
+  onclick="
+    const emuqfdoxq = document.getElementById('emuqfdoxq').checked;
+    executeQuery('${commands[command]}', emuqfdoxq);
+    document.querySelector('dialog[open]').querySelector('header > button').onclick();
+  "
+>
+  ${command}
+</button>`;
+  }).join(''); // Join the array into a single string
+
+  const guide = `<div class="font-thin text-xs">
+  - <strong class="text-sm">Enter a Query</strong>: <br/>
+    Input a query in the format <code>t=tagname</code>, <code>t=.classname</code>, <code>t=[attribute=value]</code>, or <code>t=[id]</code>. You can also use pseudo-classes with the <code>t=</code> prefix like <code>t=.classname:first-child</code>.<br/><br/>
+
+  - <strong class="text-sm">Multiple Queries</strong>: <br/>
+    Separate multiple queries with a comma (e.g., <code>t=li, t=.name</code>).<br/><br/>
+
+  - <strong class="text-sm">Pseudo-Classes</strong>: <br/>
+    You can use pseudo-classes to refine your selection. Supported pseudo-classes include:<br/>
+    <ul class="mt-4">
+      <li><code>:first-child</code> - Selects the first child element.</li>
+      <li><code>:last-child</code> - Selects the last child element.</li>
+      <li><code>:nth-child(n)</code> - Selects the nth child element.</li>
+      <li><code>:nth-last-child(n)</code> - Selects the nth last child element.</li>
+      <li><code>:only-child</code> - Selects elements that are the only child.</li>
+      <li><code>:empty</code> - Selects elements without children.</li>
+      <li><code>:first-of-type</code> - Selects the first element of its type.</li>
+      <li><code>:last-of-type</code> - Selects the last element of its type.</li>
+      <li><code>:nth-of-type(n)</code> - Selects the nth element of its type.</li>
+      <li><code>:nth-last-of-type(n)</code> - Selects the nth last element of its type.</li>
+      <li><code>:only-of-type</code> - Selects elements of its type that are the only one.</li>
+    </ul><br/>
+
+  - <strong class="text-sm">Targeting Selections</strong>: <br/>
+    Use the <code>t=</code> prefix to specify the type of selection:<br/>
+    <ul class="mt-4">
+      <li><code>t=tagname</code> - Targets elements with the specified tag.</li>
+      <li><code>t=.classname</code> - Targets elements with the specified class.</li>
+      <li><code>t=[attribute]</code> - Targets elements with the specified attribute (without defining its value).</li>
+      <li><code>t=[attribute=value]</code> - Targets elements with the specified attribute and value.</li>
+      <li><code>t=.classname:pseudo-class</code> - Targets elements with the specified class and pseudo-class.</li>
+    </ul><br/>
+
+  - <strong class="text-sm">Operation Prefixes</strong>: <br/>
+    Use the following prefixes to perform operations on the targeted elements:<br/>
+    <ul class="mt-4">
+      <li><code>r=</code> - Remove targeted elements. For example, <code>r=tagname</code> will remove all elements matching the specified tag.</li>
+      <li><code>e=</code> - Empty all children from the targeted elements. For example, <code>e=.name</code> will empty the children of all elements with the class <code>name</code>.</li>
+      <li><code>c=</code> - Apply operations to the children of the targeted elements. For example, <code>c=tagname</code> will select the children of currently selected elements that match the specified tag.</li>
+      <li><code>mv=</code> - Move targeted elements. For example, <code>mv=tagname</code> will cut the currently selected elements and paste them as elements matching the specified tag.</li>
+      <li><code>rs=</code> - Remove styles from the project as well as targeted elements. For example, <code>rs=styleName</code> will clear the specified style from all elements that currently have it applied.</li>
+    </ul><br/>
+
+  - <strong class="text-sm">Special Commands</strong>: <br/>
+    Use special commands to quickly fold, unfold, hide, show all layers, or empty all children from selections. The supported commands are:<br/>
+    <ul class="mt-4">
+      <li><code>f</code> - Collapse all layers.</li>
+      <li><code>u</code> - Uncollapse all layers.</li>
+      <li><code>h</code> - Hide all layers.</li>
+      <li><code>s</code> - Show all layers.</li>
+      <li><code>e</code> - Empty all children from selections.</li>
+    </ul>
+    If no query is provided and you click "Confirm", all current selections will be cleared automatically. (You can also do this using the shortcut <code>Shift+Ctrl+A</code> on Windows or <code>Shift+Cmd+A</code> on Mac)<br/><br/>
+
+  - <strong class="text-sm">Replace Current Selection</strong>: <br/>
+    Toggle the switch to decide whether to replace the current selection or add to it.<br/>
+    You can also hold the <code>Ctrl</code> key on Windows (<code>Cmd</code> key on Mac) to do this as well to target replacing current selection.<br/><br/>
+
+  - <strong class="text-sm">Execute</strong>: <br/>
+    Press Enter to run the command or query.<br/><br/>
+
+  - <strong class="text-sm">Close</strong>: <br/>
+    The palette will close automatically after executing a command.<br/>
+    You can also open it using the shortcut <code>Ctrl+Shift+P</code> on Windows or <code>Cmd+Shift+P</code> on Mac.<br/>
+    You can also use the <code>Esc</code> key to close every opened dialog.
+</div>`;
+
+  // Check if data.commandPalette is true
+  if (!data.commandPalette) {
+    data.commandPalette = true;
+
+    // Modal rendering code
+    Modal.render({
+      title: "Command Palette...",
+      content: `
+        <div class="p-4 grid grid-cols-1 gap-4">
+          <input
+            id="olphbh94a"
+            type="text"
+            placeholder="Enter a query (e.g., tag=li:first-child, class=name)..."
+            class="rounded-full border p-2 flex-grow"
+            style="margin: 0;"
+            onkeydown="
+              if (event.key === 'Enter') {
+                executeQuery(this.value.trim(), data.replaceCurrentSelection);
+                document.querySelector('dialog[open]').querySelector('header > button').onclick();
+              }
+            "
+          />
+          <div class="flex items-center">
+            <input 
+              type="checkbox" 
+              role="switch" 
+              id="emuqfdoxq" 
+              class="mr-2" 
+              ${data.replaceCurrentSelection ? 'checked' : ''} 
+              onchange="data.replaceCurrentSelection = !data.replaceCurrentSelection;"
+            />
+            <label for="emuqfdoxq" class="select-none">Replace current selection</label>
+          </div>
+          <hr/>
+          <details class="flex items-center mb-0" ${data.commandsOpen ? 'open' : ''} ontoggle="
+            const detailsElement = this;
+            data.commandsOpen = detailsElement.hasAttribute('open');
+          ">
+          <summary>
+            Commands
+          </summary>
+          <code class="grid grid-cols-2 gap-2 mb-0 bg-transparent">
+            ${buttonsHtml}
+          </code>
+        </details>
+        <hr/>
+        <details class="mb-0" ${data.commandPaletteGuide ? 'open' : ''} ontoggle="
+            const detailsElement = this;
+            data.commandPaletteGuide = detailsElement.hasAttribute('open');
+          ">
+          <summary>
+            How to use the Command Palette:
+          </summary>
+          ${guide}
+        </details>
+      </div>`,
+      onLoad() {
+        document.getElementById('olphbh94a').focus();
+      },
+      onClose() {
+        data.commandPalette = null;
+      },
+      onConfirm() {
+        const query = document.getElementById('olphbh94a').value.trim();
+        executeQuery(query, data.replaceCurrentSelection);
+        data.commandPalette = null;
+      }
+    });
+  }
+}
+window.updateVersionPart = (part, value) => {
+  const versionParts = project.version.split('.');
+  if (part === 'major') {
+    versionParts[0] = value;
+  } else if (part === 'minor') {
+    versionParts[1] = value;
+  } else if (part === 'patch') {
+    versionParts[2] = value;
+  }
+  project.version = versionParts.join('.');
+}
 
 // iframe functions
 window.generateId = () => {
@@ -7062,6 +7110,8 @@ window.fileToBase64 = file => {
 }
 window.importJSON = obj => {
   if (obj === null) return;
+  App.initialRender = true;
+  data.selectedLayerIds = [];
   project.name = obj.name;
   project.version = obj.version;
   project.title = obj.title;
@@ -7076,11 +7126,15 @@ window.importJSON = obj => {
   project.meta = obj.meta;
   project.libraries = obj.libraries;
   project.css = obj.css;
+  project.html = obj.html;
   if (obj.components) {
     project['components'] = obj.components;
+    collectComponents(project.html);
   }
-  project.html = obj.html;
+  App.initialRender = null;
+  collectSelectedIDs(project.html);
   App.render('#app');
+  renderPreview(true);
 }
 window.newProject = () => {
   const obj = {
@@ -7154,6 +7208,13 @@ window.newProject = () => {
       libraries: [
         "https://cdnjs.cloudflare.com/ajax/libs/picocss/2.0.6/pico.min.css",
         "https://michaelsboost.com/TailwindCSSMod/tailwind-mod-noreset.min.js"
+      ],
+      meta: ''
+    },
+    'poly ui': {
+      source: 'imgs/frameworks/polyui.svg',
+      libraries: [
+        "https://treehouse-code-samples.s3.amazonaws.com/poly/css/polyui.css"
       ],
       meta: ''
     },
@@ -7280,6 +7341,51 @@ window.newProject = () => {
     }
   });
 }
+window.emptyStorage = () => {
+  Modal.render({
+    title: "Are you sure you want to empty storage?",
+    content: '<div class="p-4 text-center">All current data will be lost.</div>',
+    onConfirm() {
+      // Clear local storage
+      localStorage.removeItem('Polyrise');
+    
+      // Clear session storage specific to Polyrise (if you use a specific key)
+      sessionStorage.removeItem('Polyrise');
+    
+      // Clear cookies specific to Polyrise
+      document.cookie.split(";").forEach(function(c) {
+        if (c.trim().startsWith('Polyrise')) {
+          document.cookie = c.trim().split("=")[0] + 
+                            '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+        }
+      });
+    
+      // Clear service worker caches specific to Polyrise
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          names.forEach(function(name) {
+            if (name === 'Polyrise-cache') {
+              caches.delete(name);
+            }
+          });
+        });
+      }
+    
+      // Unregister service workers specific to Polyrise
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          registrations.forEach(function(registration) {
+            if (registration.scope.includes('Polyrise')) {
+              registration.unregister();
+            }
+          });
+        });
+      }
+    
+      location.reload();
+    }
+  });
+}
 window.importProject = () => {
   Modal.render({
     title: "Are you sure you want to load a new project?",
@@ -7305,9 +7411,6 @@ window.importProject = () => {
         reader.onload = event => {
           try {
             importJSON(JSON.parse(event.target.result));
-            setTimeout(function() {
-              renderPreview(true);
-            }, 100);
           } catch (error) {
             console.error('Error parsing JSON file:', error);
           }
@@ -7658,6 +7761,127 @@ window.downloadJSON = async () => {
     // Clean up scripts after use
     removeScript("libraries/jszip/FileSaver.min.js");
   }
+}
+window.downloadQuickCommands = () => {
+  const colorMappings = {
+    'black': '#000000',
+    'white': '#ffffff',
+    'gray-50': '#f9fafb',
+    'gray-100': '#f3f4f6',
+    'gray-200': '#e5e7eb',
+    'gray-300': '#d1d5db',
+    'gray-400': '#9ca3af',
+    'gray-500': '#6b7280',
+    'gray-600': '#4b5563',
+    'gray-700': '#374151',
+    'gray-800': '#1f2937',
+    'gray-900': '#111827',
+    'red-50': '#fef2f2',
+    'red-100': '#fee2e2',
+    'red-200': '#fecaca',
+    'red-300': '#fca5a5',
+    'red-400': '#f87171',
+    'red-500': '#ef4444',
+    'red-600': '#dc2626',
+    'red-700': '#b91c1c',
+    'red-800': '#991b1b',
+    'red-900': '#7f1d1d',
+    'yellow-50': '#fefce8',
+    'yellow-100': '#fef9c3',
+    'yellow-200': '#fef08a',
+    'yellow-300': '#fde047',
+    'yellow-400': '#facc15',
+    'yellow-500': '#eab308',
+    'yellow-600': '#ca8a04',
+    'yellow-700': '#a16207',
+    'yellow-800': '#854d0e',
+    'yellow-900': '#713f12',
+    'green-50': '#f0fdf4',
+    'green-100': '#dcfce7',
+    'green-200': '#bbf7d0',
+    'green-300': '#86efac',
+    'green-400': '#4ade80',
+    'green-500': '#22c55e',
+    'green-600': '#16a34a',
+    'green-700': '#15803d',
+    'green-800': '#166534',
+    'green-900': '#14532d',
+    'blue-50': '#eff6ff',
+    'blue-100': '#dbeafe',
+    'blue-200': '#bfdbfe',
+    'blue-300': '#93c5fd',
+    'blue-400': '#60a5fa',
+    'blue-500': '#3b82f6',
+    'blue-600': '#2563eb',
+    'blue-700': '#1d4ed8',
+    'blue-800': '#1e40af',
+    'blue-900': '#1e3a8a',
+    'indigo-50': '#eef2ff',
+    'indigo-100': '#e0e7ff',
+    'indigo-200': '#c7d2fe',
+    'indigo-300': '#a5b4fc',
+    'indigo-400': '#818cf8',
+    'indigo-500': '#6366f1',
+    'indigo-600': '#4f46e5',
+    'indigo-700': '#4338ca',
+    'indigo-800': '#3730a3',
+    'indigo-900': '#312e81',
+    'purple-50': '#f5f3ff',
+    'purple-100': '#ede9fe',
+    'purple-200': '#ddd6fe',
+    'purple-300': '#c4b5fd',
+    'purple-400': '#a78bfa',
+    'purple-500': '#8b5cf6',
+    'purple-600': '#7c3aed',
+    'purple-700': '#6d28d9',
+    'purple-800': '#5b21b6',
+    'purple-900': '#4c1d95',
+    'pink-50': '#fdf2f8',
+    'pink-100': '#fce7f3',
+    'pink-200': '#fbcfe8',
+    'pink-300': '#f9a8d4',
+    'pink-400': '#f472b6',
+    'pink-500': '#ec4899',
+    'pink-600': '#db2777',
+    'pink-700': '#be185d',
+    'pink-800': '#9d174d',
+    'pink-900': '#831843'
+  };    
+
+  function updateBorderColors(data) {
+    const updatedData = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (key.startsWith('border-') && !key.includes('-opacity')) {
+        const colorKey = key.split('-').slice(1).join('-');
+        const color = colorMappings[colorKey] || 'transparent';
+        updatedData[key] = `--tw-border-opacity: 1; border-top-color: ${color}; border-right-color: ${color}; border-bottom-color: ${color}; border-left-color: ${color};`;
+      } else {
+        updatedData[key] = value;
+      }
+    }
+    return updatedData;
+  }
+  
+
+  window.saveAsJson = async (data, filename) => {
+    try {
+      await loadScript("libraries/jszip/FileSaver.min.js");
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      saveAs(blob, filename);
+  
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      // Clean up scripts after use
+      removeScript("libraries/jszip/FileSaver.min.js");
+    }
+  }
+
+  // Generate the CSS quick commands and save to a JSON file
+  generateCssQuickCommands('libraries/tailwind/tailwind-mod.min.css').then(cssQuickCommands => {
+    const updatedData = updateBorderColors(cssQuickCommands);
+    saveAsJson(updatedData, 'cssQuickCommands.json');
+  });
 }
 window.getFile = async (url, callback = null) => {
   try {
@@ -8225,7 +8449,6 @@ ${json2css(project.css)}`,
     console.error('Error sharing project:', error);
   }
 }
-
 window.screenshot = async () => {
   const iframe = document.getElementById('iframe');
   const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
@@ -8447,7 +8670,12 @@ document.addEventListener('DOMContentLoaded', function() {
   window.onload = () => {
     App.render('#app');
     getIFrameClientSize();
-    
+    // URL to the JSON file
+    const jsonFileUrl = '../cssQuickCommands.json';
+
+    // Apply the CSS quick commands
+    applyCssQuickCommands(jsonFileUrl);
+
     // Set the state to true when the Command/Shift key is down
     window.onkeydown = e => {
       const activeElement = document.activeElement;
@@ -8489,7 +8717,6 @@ document.addEventListener('DOMContentLoaded', function() {
           if (e.key.toLowerCase() === 'v') return handleShortcut(pasteLayers);
           if (isShiftPressed && e.key.toLowerCase() === 'p') return handleShortcut(commandPalette);
           if (isShiftPressed && isModifierPressed && e.key.toLowerCase() === 'a') return handleShortcut(clearAllSelections);
-          if (isShiftPressed && isModifierPressed) return collectSelectedIDs(project.html);
         }
     
         // Update shift key state
@@ -8526,10 +8753,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (localStorage.getItem('Polyrise')) {
       importJSON(JSON.parse(localStorage.getItem('Polyrise')));
-      setTimeout(() => renderPreview(true), 100);
     }
-    collectSelectedIDs(project.html);
-    collectComponents(project.html);
     window.onresize = () => getIFrameClientSize();
   };
 });

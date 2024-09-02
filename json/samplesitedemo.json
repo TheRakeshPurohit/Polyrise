@@ -167,32 +167,31 @@
   "html": [
     {
       "tag": "div",
-      "id": "junabnxpq",
-      "styles": "",
-      "state": {
-        "collapsed": false,
-        "visible": true,
-        "selected": true
-      },
-      "name": "nav",
-      "type": "box",
-      "text": "Polyrise",
-      "props": {
-        "class": "navbar"
-      },
-      "children": [],
-      "style": ".navbar"
-    },
-    {
-      "tag": "section",
-      "id": "lzmibhvrk",
-      "styles": "",
+      "id": "tzxzvms4p",
+      "style": ".navbar",
       "state": {
         "collapsed": false,
         "visible": true,
         "selected": false
       },
-      "name": "hero section",
+      "name": "navbar",
+      "type": "box",
+      "text": "Polyrise",
+      "props": {
+        "class": "navbar"
+      },
+      "children": []
+    },
+    {
+      "tag": "main",
+      "id": "eloejw877",
+      "style": ".hero",
+      "state": {
+        "collapsed": false,
+        "visible": true,
+        "selected": false
+      },
+      "name": "hero",
       "type": "box",
       "text": "",
       "props": {
@@ -201,14 +200,14 @@
       "children": [
         {
           "tag": "div",
-          "id": "tusz5xbry",
-          "styles": "",
+          "id": "t7i7juho6",
+          "style": ".container",
           "state": {
             "collapsed": false,
             "visible": true,
             "selected": false
           },
-          "name": "div",
+          "name": "container",
           "type": "box",
           "text": "",
           "props": {
@@ -217,8 +216,8 @@
           "children": [
             {
               "tag": "h1",
-              "id": "s6vupmopq",
-              "styles": "",
+              "id": "icl723l1x",
+              "style": ".hero h1",
               "state": {
                 "collapsed": false,
                 "visible": true,
@@ -226,15 +225,13 @@
               },
               "name": "h1",
               "type": "text",
-              "text": "Free Mobile Website Builder! ",
-              "props": {},
-              "children": [],
-              "style": ".hero h1"
+              "text": "Free Mobile Website Builder!",
+              "children": []
             },
             {
               "tag": "p",
-              "id": "km2qt1x1z",
-              "styles": "",
+              "id": "uses42x36",
+              "style": "",
               "state": {
                 "collapsed": false,
                 "visible": true,
@@ -247,8 +244,8 @@
             },
             {
               "tag": "button",
-              "id": "uqpwiksxf",
-              "styles": "",
+              "id": "enagjqpf6",
+              "style": ".btn",
               "state": {
                 "collapsed": false,
                 "visible": true,
@@ -260,21 +257,18 @@
               "props": {
                 "class": "btn"
               },
-              "children": [],
-              "style": ".btn"
+              "children": []
             }
-          ],
-          "style": ".container"
+          ]
         }
-      ],
-      "style": ".hero"
+      ]
     },
     {
       "tag": "section",
-      "id": "asnonfomf",
-      "styles": "",
+      "id": "bdpis3s67",
+      "style": ".features",
       "state": {
-        "collapsed": false,
+        "collapsed": true,
         "visible": true,
         "selected": false
       },
@@ -287,10 +281,10 @@
       "children": [
         {
           "tag": "div",
-          "id": "wq3ryv9tr",
-          "styles": "",
+          "id": "ms3bo6uz4",
+          "style": ".feature",
           "state": {
-            "collapsed": false,
+            "collapsed": true,
             "visible": true,
             "selected": false
           },
@@ -303,8 +297,8 @@
           "children": [
             {
               "tag": "h2",
-              "id": "gol3ghz5w",
-              "styles": "",
+              "id": "l2sszpmyv",
+              "style": "",
               "state": {
                 "collapsed": false,
                 "visible": true,
@@ -317,8 +311,8 @@
             },
             {
               "tag": "p",
-              "id": "ju51eprnl",
-              "styles": "",
+              "id": "kf8uckupd",
+              "style": "",
               "state": {
                 "collapsed": false,
                 "visible": true,
@@ -329,15 +323,14 @@
               "text": "Describe the first feature of the product here.",
               "children": []
             }
-          ],
-          "style": ".feature"
+          ]
         },
         {
           "tag": "div",
-          "id": "knmm40c7t",
-          "styles": "",
+          "id": "xlb227t4f",
+          "style": ".feature",
           "state": {
-            "collapsed": false,
+            "collapsed": true,
             "visible": true,
             "selected": false
           },
@@ -350,8 +343,8 @@
           "children": [
             {
               "tag": "h2",
-              "id": "hrr8xx02w",
-              "styles": "",
+              "id": "mtzw3xswo",
+              "style": "",
               "state": {
                 "collapsed": false,
                 "visible": true,
@@ -364,8 +357,8 @@
             },
             {
               "tag": "p",
-              "id": "h6k1h9gtm",
-              "styles": "",
+              "id": "yc264mp48",
+              "style": "",
               "state": {
                 "collapsed": false,
                 "visible": true,
@@ -376,15 +369,14 @@
               "text": "Describe the second feature of the product here.",
               "children": []
             }
-          ],
-          "style": ".feature"
+          ]
         },
         {
           "tag": "div",
-          "id": "cfataxks4",
-          "styles": "",
+          "id": "tw7cmc4jv",
+          "style": ".feature",
           "state": {
-            "collapsed": false,
+            "collapsed": true,
             "visible": true,
             "selected": false
           },
@@ -397,8 +389,8 @@
           "children": [
             {
               "tag": "h2",
-              "id": "vskkk59f1",
-              "styles": "",
+              "id": "swrz9hpmb",
+              "style": "",
               "state": {
                 "collapsed": false,
                 "visible": true,
@@ -411,8 +403,8 @@
             },
             {
               "tag": "p",
-              "id": "oe1kitbdu",
-              "styles": "",
+              "id": "hpxh2m5jw",
+              "style": "",
               "state": {
                 "collapsed": false,
                 "visible": true,
@@ -423,18 +415,16 @@
               "text": "Describe the third feature of the product here.",
               "children": []
             }
-          ],
-          "style": ".feature"
+          ]
         }
-      ],
-      "style": ".features"
+      ]
     },
     {
-      "tag": "div",
-      "id": "gdk1xwh37",
-      "styles": "",
+      "tag": "footer",
+      "id": "uyz0vhpvl",
+      "style": ".footer",
       "state": {
-        "collapsed": false,
+        "collapsed": true,
         "visible": true,
         "selected": false
       },
@@ -447,8 +437,8 @@
       "children": [
         {
           "tag": "p",
-          "id": "hhbx1g3pd",
-          "styles": "",
+          "id": "mctsabbkm",
+          "style": "",
           "state": {
             "collapsed": false,
             "visible": true,
@@ -459,8 +449,7 @@
           "text": "© 2024 Product Company. All rights reserved.",
           "children": []
         }
-      ],
-      "style": ".footer"
+      ]
     }
   ],
   "logo": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhLS0gQ3JlYXRlZCB3aXRoIElua3NjYXBlIChodHRwOi8vd3d3Lmlua3NjYXBlLm9yZy8pIC0tPgoKPHN2ZwogICB3aWR0aD0iNTEyIgogICBoZWlnaHQ9IjUxMiIKICAgdmlld0JveD0iMCAwIDEzNS40NjY2NiAxMzUuNDY2NjciCiAgIHZlcnNpb249IjEuMSIKICAgaWQ9InN2ZzEiCiAgIHhtbDpzcGFjZT0icHJlc2VydmUiCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM6c3ZnPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnMKICAgICBpZD0iZGVmczEiIC8+PGcKICAgICBpZD0iZzI0Ij48cGF0aAogICAgICAgaWQ9InBhdGgyMiIKICAgICAgIHN0eWxlPSJkaXNwbGF5OmlubGluZTtmaWxsOiMxMzNhZDQ7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlLXdpZHRoOjk2LjE3NDtzdHJva2UtbGluZWNhcDpyb3VuZDtzdHJva2UtbGluZWpvaW46cm91bmQiCiAgICAgICBkPSJNIDkuNTgyODc3NSw2Ny43MzMzMzIgViAxMzUuMjAwNTMgTCAyNS4zODc1OTcsMTI2LjAzMTA3IFYgMTA2Ljk2MDQgNjcuNzMzMzMyIFogbSA4NS45Njg5MTE1LDAgLTU3Ljc2OTA4MywzMi4yOTcyNTggdiAxOC44MTA3MyBMIDEyNS44ODIyNCw2Ny43MzMzMzIgWiIgLz48cGF0aAogICAgICAgc3R5bGU9ImRpc3BsYXk6aW5saW5lO2ZpbGw6IzA0YTJmZjtmaWxsLW9wYWNpdHk6MTtzdHJva2Utd2lkdGg6MTQ7c3Ryb2tlLWxpbmVjYXA6cm91bmQ7c3Ryb2tlLWxpbmVqb2luOnJvdW5kIgogICAgICAgaWQ9InBhdGgyMyIKICAgICAgIGQ9Im0gNDkuNTY4NTI3LDM1LjgxOTU1MyAtMTYuOTcwNDc4LDkuNzk3OTEgMCwtMTkuNTk1ODIgeiIKICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDIuMjE3MjY1MiwwLDAsMi4xNDcwMjkzLC0zNC40OTUyNjksLTkuMjYyMTYyKSIgLz48cGF0aAogICAgICAgaWQ9InBhdGgyNCIKICAgICAgIHN0eWxlPSJkaXNwbGF5OmlubGluZTtmaWxsOiM4NjAwZWY7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlLXdpZHRoOjk2LjE3NDtzdHJva2UtbGluZWNhcDpyb3VuZDtzdHJva2UtbGluZWpvaW46cm91bmQiCiAgICAgICBkPSJNIDkuNTgyODc3NSwwLjI2NjEzMzYyIFYgNjcuNzMzMzMyIEggMjUuMzg3NTk3IFYgNDIuODU2ODE1IDI4LjMyNjk1MyBsIDcwLjMyNTkzOSwzOS4zMTU5NDYgLTAuMTYxNzQ3LDAuMDkwNDMgaCAzMC4zMzA0NTEgbCAwLjAwMiwtMC4wMDEgeiIgLz48L2c+PC9zdmc+Cg==",
