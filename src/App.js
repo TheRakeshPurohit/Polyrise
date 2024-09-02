@@ -7659,15 +7659,23 @@ window.downloadJSON = async () => {
     removeScript("libraries/jszip/FileSaver.min.js");
   }
 }
-window.getFile = async (url, callback) => {
+window.getFile = async (url, callback = null) => {
   try {
     const response = await fetch(url);
     if (!response.ok) throw new Error("Network response was not ok");
     const fileContent = await response.text();
-    callback(null, fileContent); // Call the callback with the file content
+    if (callback && typeof callback === 'function') {
+      callback(null, fileContent); // Call the callback with the file content
+    } else {
+      return fileContent; // Return the file content
+    }
   } catch (error) {
     console.warn("Request error:", error);
-    callback(error); // Call the callback with the error
+    if (callback && typeof callback === 'function') {
+      callback(error, null); // Call the callback with the error
+    } else {
+      throw error; // Re-throw to handle in caller
+    }
   }
 }
 window.minifyCSS = source => {
