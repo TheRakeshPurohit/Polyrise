@@ -7839,14 +7839,12 @@ ${app.summary} ${app.description}
       css4html = `<link rel="stylesheet" href="dist/bundle.css">
     `;
       cssBuild = `"build:css": "postcss src/bundle.css -o dist/bundle.css",`;
-      zip.file("src/style.css", css + cssImport);
       zip.file("src/bundle.css", cssImport + css);
       zip.file('dist/bundle.css', minifyCSS(cssContent + tailwindStyles + css));
     } else {
       css4html = `<link rel="stylesheet" href="dist/bundle.css">
     `;
       cssBuild = `"build:css": "postcss src/bundle.css -o dist/bundle.css",`;
-      zip.file("src/style.css", css);
       zip.file("src/bundle.css", css);
       zip.file('dist/bundle.css', minifyCSS(css));
     }
@@ -7855,7 +7853,7 @@ ${app.summary} ${app.description}
     if (twFound) {
       let configCode = `module.exports = {
   content: [
-    './src/**/*.html',
+    './**/*.html',
     './src/**/*.js',
   ],
   theme: {
@@ -7888,7 +7886,7 @@ ${app.summary} ${app.description}
   "version": "${project.version}",
   "type": "module",
   "scripts": {
-    "build:css": "postcss src/style.css -o dist/style.min.css",
+    "build:css": "postcss src/bundle.css -o dist/bundle.css",
     "build": "npm run build:css",
     "serve": "http-server -c-1 -p 8081"
   },
@@ -8106,8 +8104,7 @@ workbox.routing.registerRoute(
         <link rel="shortcut icon" type="image/x-icon" href="imgs/logo.svg">
         <link rel="icon" type="image/svg+xml" href="imgs/logo.svg" />
         <link rel="apple-touch-icon" href="imgs/logo.svg">
-        ${cssTags}
-        <style>${css}</style>
+        ${css4html}${project.meta ? `${project.meta}\n  ` : ''}
       </head>
       <body>
         
