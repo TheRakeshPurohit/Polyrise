@@ -96,6 +96,7 @@ let d = {
   stylesTarget: null,
   animationTarget: null,
   animationKeyframe: null,
+  canUseQuickCommands: null,
   cssQuickCommands: {},
   defaultValues: {
     "animation": "none",
@@ -3670,9 +3671,9 @@ window.addStylePropModal = (id, obj) => {
         }
       "/>
     </div>
-    <div class="text-center text-[.6rem]">
+    ${data.canUseQuickCommands ? `<div class="text-center text-[.6rem]">
       You can also apply styles using <a href="https://tailwindcss.com/" target="_blank">tailwind</a> classes as quick commands!
-    </div>`;
+    </div>` : ''}`;
 
   Modal.render({
     title: `Add New Style to "${id}"`,
@@ -4601,8 +4602,9 @@ window.fetchCssQuickCommands = async url => {
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
-    const data = await response.json();
-    return data;
+    data.canUseQuickCommands = true;
+    const obj = await response.json();
+    return obj;
   } catch (error) {
     console.error('Error fetching CSS quick commands:', error);
   }
