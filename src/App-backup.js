@@ -2403,7 +2403,7 @@ function Inspector() {
         <button 
           class="${buttonAddItemClass}" 
           style="color: unset;" 
-          onclick="addStylePropModal('${styleKey}', ${stylesObj});">
+          onclick="addStylePropModal('${data.stylesTarget}', ${stylesObj});">
           <svg class="w-3" viewBox="0 0 576 512" style="color: unset;">
             <path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path>
           </svg>
@@ -3717,61 +3717,55 @@ window.addStylePropModal = (id, obj) => {
       };
     },
     onConfirm() {
-      const propertyTypeInput = document.getElementById('ool1zyibs').value.trim();
+      let propertyTypeInput = document.getElementById('ool1zyibs').value.trim();
       const unit = document.getElementById('property-unit') ? document.getElementById('property-unit').value : '';
       const noUnit = ['opacity', 'z-index'];
       const cssQuickCommands = data.cssQuickCommands;
+      
+      // Normalize the input
+      const properties = propertyTypeInput.split(',').map(prop => prop.trim());
     
-      if (propertyTypeInput) {
-        // Check if the input matches a quick command
-        if (cssQuickCommands[propertyTypeInput]) {
-          const quickCommand = cssQuickCommands[propertyTypeInput];
-          const properties = quickCommand.split(';').filter(Boolean);
-
-          properties.forEach(propertyString => {
-            let [propertyType, userDefinedValue] = propertyString.split(':').map(str => str.trim());
-            propertyType = propertyType.toLowerCase();
-            obj[propertyType] = userDefinedValue;
+      properties.forEach(propertyString => {
+        let [propertyType, userDefinedValue] = propertyString.split('=').map(str => str.trim());
+        propertyType = propertyType.toLowerCase();
+    
+        // Check if propertyType is a Tailwind quick command
+        if (Object.keys(cssQuickCommands).includes(propertyType)) {
+          const quickCommand = cssQuickCommands[propertyType];
+          const quickCommandProperties = quickCommand.split(';').filter(Boolean);
+    
+          quickCommandProperties.forEach(propertyString => {
+            let [quickPropertyType, quickUserDefinedValue] = propertyString.split(':').map(str => str.trim());
+            quickPropertyType = quickPropertyType.toLowerCase();
+            obj[quickPropertyType] = quickUserDefinedValue;
           });
-
         } else {
-          // Split the input to separate properties and handle each individually
-          const properties = propertyTypeInput.split(',').map(prop => prop.trim());
-
-          properties.forEach(propertyString => {
-            let [propertyType, userDefinedValue] = propertyString.split('=').map(str => str.trim());
-            propertyType = propertyType.charAt(0).toLowerCase() + propertyType.slice(1);
-
-            let finalValue;
-
-            if (userDefinedValue) {
-              // Use the user-defined value
-              finalValue = userDefinedValue + (unit && !noUnit.includes(propertyType) ? unit : '');
-            } else {
-              // Use the default value if no value was provided
-              const defaultValue = defaultValues[propertyType] || defaultValues['default'];
-              finalValue = unit ? `${defaultValue}${unit}` : defaultValue;
-            }
-
-            // Apply the final value to the property
-            if (noUnit.includes(propertyType)) {
-              obj[propertyType] = userDefinedValue || "1";
-            } else {
-              obj[propertyType] = finalValue;
-            }
-          });
+          // Handle custom properties
+          let finalValue;
+    
+          if (userDefinedValue) {
+            // Use the user-defined value
+            finalValue = userDefinedValue + (unit && !noUnit.includes(propertyType) ? unit : '');
+          } else {
+            // Use the default value if no value was provided
+            const defaultValue = defaultValues[propertyType] || defaultValues['default'];
+            finalValue = unit ? `${defaultValue}${unit}` : defaultValue;
+          }
+    
+          // Apply the final value to the property
+          if (noUnit.includes(propertyType)) {
+            obj[propertyType] = userDefinedValue || "1";
+          } else {
+            obj[propertyType] = finalValue;
+          }
         }
-
-        App.render("#app");
-        renderPreview();
-        saveState();
-      } else {
-        Modal.render({
-          title: "Unable to add property!",
-          content: "Please enter a valid CSS property or quick command."
-        });
-      }
+      });
+    
+      App.render("#app");
+      renderPreview();
+      saveState();
     }
+    
   });
 }
 window.renameStyleTarget = target => {
@@ -4435,13 +4429,13 @@ window.addPseudo = selector => {
     title: `Add A Pseudo-Class/Element`,
     content: modalContent,
     onLoad() {
-      document.getElementById('pseudo-selector').focus();
+      document.getElementById('pseudo-input').focus();
     },
     onConfirm() {
       const pseudoSelector = document.getElementById('pseudo-selector').value.trim();
       const pseudoStyles = document.getElementById('pseudo-input').value.trim();
 
-      if (pseudoSelector && pseudoStyles) {
+      if (pseudoStyles) {
         // Convert pseudoStyles into an object
         const styles = pseudoStyles.split(';').reduce((acc, rule) => {
           const [property, value] = rule.split(':').map(s => s.trim());
@@ -4449,7 +4443,7 @@ window.addPseudo = selector => {
           return acc;
         }, {});
 
-        const existingPseudo = project.css.styles[selector].pseudos.find(pseudo => pseudo.selector === pseudoSelector);
+        const existingPseudo = project.css.styles[selector].pseudos.find(pseudo => pseudo.selector === pseudoStyles);
 
         if (existingPseudo) {
           // Merge new styles with existing styles if pseudo already exists
@@ -4460,7 +4454,7 @@ window.addPseudo = selector => {
         } else {
           // Add a new pseudo object
           let obj = {
-            "selector": pseudoSelector,
+            "selector": pseudoStyles,
             "styles": styles
           };
           project.css.styles[selector].pseudos.push(obj);
@@ -5972,7 +5966,7 @@ window.selectedBlock = layerId => {
     const newSelectionState = !isSelected;
 
     // If replaceCurrentSelection is true and shiftKey is not pressed, clear all selections
-    if ((data.replaceCurrentSelection || data.cmdKey) && !data.shiftKey) {
+    if (data.cmdKey && !data.shiftKey) {
       data.selectedLayerIds.forEach(id => {
         const layer = findLayerById(id);
         if (layer) {
@@ -7110,7 +7104,7 @@ window.fileToBase64 = file => {
     reader.onerror = error => reject(error);
   });
 }
-window.importJSON = obj => {
+window.importJSON = (obj, callback = null) => {
   if (obj === null) return;
   App.initialRender = true;
   data.selectedLayerIds = [];
@@ -7137,6 +7131,11 @@ window.importJSON = obj => {
   collectSelectedIDs(project.html);
   App.render('#app');
   renderPreview(true);
+
+  // Call the callback function if provided
+  if (typeof callback === 'function') {
+    callback();
+  }
 }
 window.newProject = () => {
   const obj = {
@@ -7164,185 +7163,45 @@ window.newProject = () => {
     activePanel: 'layers'
   }
 
-  let frameworks = {
-    'none': {
-      libraries: [],
-      meta: ''
-    },
-    'alpine.js': {
-      source: 'imgs/frameworks/alpine.svg',
-      libraries: [],
-      meta: '<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" defer></script>'
-    },
-    'bootstrap 5': {
-      source: 'imgs/frameworks/bootstrap-5.svg',
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css",
-        "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"
-      ],
-      meta: ''
-    },
-    'bulma': {
-      source: 'imgs/frameworks/bulma.svg',
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css"
-      ],
-      meta: ''
-    },
-    'foundation': {
-      source: 'imgs/frameworks/foundation.svg',
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/foundation/6.6.3/css/foundation.min.css",
-        "https://cdnjs.cloudflare.com/ajax/libs/foundation/6.6.3/js/foundation.min.js"
-      ],
-      meta: ''
-    },
-    'materialize': {
-      source: 'imgs/frameworks/materialize.svg',
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css",
-        "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"
-      ],
-      meta: ''
-    },
-    'pico.css': {
-      source: 'imgs/frameworks/pico-css.svg',
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/picocss/2.0.6/pico.min.css",
-        "https://michaelsboost.com/TailwindCSSMod/tailwind-mod-noreset.min.js"
-      ],
-      meta: ''
-    },
-    'poly ui': {
-      source: 'imgs/frameworks/polyui.svg',
-      libraries: [
-        "https://treehouse-code-samples.s3.amazonaws.com/poly/css/polyui.css"
-      ],
-      meta: ''
-    },
-    'semantic': {
-      source: 'imgs/frameworks/semantic-ui.svg',
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.2/semantic.min.css",
-        "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.2/semantic.min.js"
-      ],
-      meta: ''
-    },
-    'tailwind': {
-      source: 'imgs/frameworks/tailwind.svg',
-      libraries: [
-        "https://michaelsboost.com/TailwindCSSMod/tailwind-mod.min.js"
-      ],
-      meta: ''
-    },
-    'uikit': {
-      source: 'imgs/frameworks/uikit.svg',
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.17.2/css/uikit.min.css",
-        "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.17.2/js/uikit.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.17.2/js/uikit-icons.min.js"
-      ],
-      meta: ''
-    }
-  };
-
   let modalContent = `
-  <style>
-    .framework-image {
-      filter: grayscale(100%) brightness(0.5);
-      transition: filter 0.3s ease-in-out;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-    input[name="framework"]:checked + label .framework-image {
-      filter: grayscale(0%) brightness(1);
-    }
-    .image-container {
-      aspect-ratio: 1 / 1; /* Ensures the container is always square */
-      width: 100%;
-      height: 100%;
-      max-width: 256px;
-      display: flex;
-      align-items: center;
-      overflow: visible; /* Allow the shadow to extend outside */
-      position: relative; /* Ensures positioning context for the shadow */
-      padding: 1rem; /* Adds padding to make space for the shadow */
-    }
-    .framework-name {
-      filter: grayscale(100%) brightness(0.5);
-      transition: color 0.3s ease-in-out; /* Smooth transition for color change */
-    }
-    input[name="framework"]:checked + label .framework-name {
-      filter: grayscale(0%) brightness(1);
-      color: #3b82f6; /* Tailwind's blue-500 color */
-    }
-    input[name="framework"][value="none"]:checked + label .framework-name {
-      color: #ef4444; /* Tailwind's red-500 color to match the SVG */
-    }
-  </style>
-  <div class="p-4">
-    <div class="p-4 text-center">All current data will be lost.</div>
-    <div class="mb-4 text-center">Please select a framework to start your new project.</div>
-    <div class="grid grid-cols-4 gap-4 place-items-center">
-      <div class="text-center">
-        <input type="radio" checked="true" name="framework" id="dnwk5f059" value="none" class="hidden peer" />
-        <label for="dnwk5f059" class="cursor-pointer grid grid-rows-1 items-center bg-transparent border-0 focus-within:shadow-none">
-          <div class="flex flex-col justify-between h-full">
-            <div class="image-container">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full text-red-400 framework-image" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12 4c-4.419 0-8 3.582-8 8s3.581 8 8 8s8-3.582 8-8s-3.581-8-8-8m3.707 10.293a.999.999 0 1 1-1.414 1.414L12 13.414l-2.293 2.293a.997.997 0 0 1-1.414 0a1 1 0 0 1 0-1.414L10.586 12L8.293 9.707a.999.999 0 1 1 1.414-1.414L12 10.586l2.293-2.293a.999.999 0 1 1 1.414 1.414L13.414 12z"/>
-              </svg>
-            </div>
-            <div class="capitalize text-center mt-2 framework-name">none</div>
-          </div>
-        </label>
+    <div class="p-4">
+      <div class="p-4 text-center">All current data will be lost.</div>
+      <div class="mb-4 text-center">✨ Click the image to start with a template! 🚀</div>
+      <div class="grid grid-cols-1 gap-4 place-items-center">
+        <img class="cursor-pointer rounded-md shadow-2xl" id="starter-project" src="imgs/demo.png" width="593" height="335" loading="lazy">
       </div>
-      ${Object.keys(frameworks).map(framework => {
-        if (framework === 'none') return;
-        const id = generateId();
-  
-        // Capitalize the first letter and make the rest lowercase
-        const formattedFrameworkName = framework.charAt(0).toUpperCase() + framework.slice(1).toLowerCase();
-      
-        return `
-          <div class="text-center">
-            <input type="radio" name="framework" id="${id}" value="${framework}" class="hidden peer" />
-            <label for="${id}" class="cursor-pointer grid grid-rows-1 items-center bg-transparent border-0 focus-within:shadow-none">
-              <div class="flex flex-col justify-between h-full">
-                <div class="image-container">
-                  <img src="${frameworks[framework].source}" alt="${formattedFrameworkName}" 
-                    class="framework-image" loading="lazy" />
-                </div>
-                <div class="text-center mt-2 framework-name">${formattedFrameworkName}</div>
-              </div>
-            </label>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  </div>`;
+    </div>`;
 
   Modal.render({
     title: "Are you sure you want to start a new project?",
     content: modalContent,
+    onLoad() {
+      // Set up the event listener once the modal is loaded
+      document.getElementById('starter-project').onclick = () => {
+        fetch('json/bootstrap-landing-page-demo.json')
+          .then(response => response.json())
+          .then(data => {
+            importJSON(data, () => {
+              if (document.querySelector('dialog[open]')) {
+                document.querySelector('dialog[open]').querySelector('header > button:last-child').onclick();
+              }
+              if (document.querySelector('dialog[open]')) {
+                document.querySelector('dialog[open]').querySelector('header > button:last-child').onclick();
+              }
+            });
+          })
+          .catch(error => {
+            console.error('Error loading the starter project:', error);
+          });
+      };
+    },
     onConfirm() {
-      const selectedFramework = document.querySelector('input[name="framework"]:checked');
-      
-      if (selectedFramework) {
-        string = selectedFramework.value;
-        if (string) {
-          // Code to handle the initialization with the selected framework
-          obj.libraries = frameworks[`${string}`].libraries;
-          obj.meta = frameworks[`${string}`].meta;
-          importJSON(obj);
-          data.menuDialog = null;
-          App.render('#app');
-        }
-      }
+      importJSON(obj);
+      data.menuDialog = null;
     }
   });
-}
+};
+
 window.emptyStorage = () => {
   Modal.render({
     title: "Are you sure you want to empty storage?",

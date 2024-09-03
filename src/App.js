@@ -2403,7 +2403,7 @@ function Inspector() {
         <button 
           class="${buttonAddItemClass}" 
           style="color: unset;" 
-          onclick="addStylePropModal('${styleKey}', ${stylesObj});">
+          onclick="addStylePropModal('${data.stylesTarget}', ${stylesObj});">
           <svg class="w-3" viewBox="0 0 576 512" style="color: unset;">
             <path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path>
           </svg>
@@ -3717,61 +3717,54 @@ window.addStylePropModal = (id, obj) => {
       };
     },
     onConfirm() {
-      const propertyTypeInput = document.getElementById('ool1zyibs').value.trim();
+      let propertyTypeInput = document.getElementById('ool1zyibs').value.trim();
       const unit = document.getElementById('property-unit') ? document.getElementById('property-unit').value : '';
       const noUnit = ['opacity', 'z-index'];
       const cssQuickCommands = data.cssQuickCommands;
+      
+      // Normalize the input
+      const properties = propertyTypeInput.split(',').map(prop => prop.trim());
     
-      if (propertyTypeInput) {
-        // Check if the input matches a quick command
-        if (cssQuickCommands[propertyTypeInput]) {
-          const quickCommand = cssQuickCommands[propertyTypeInput];
-          const properties = quickCommand.split(';').filter(Boolean);
-
-          properties.forEach(propertyString => {
-            let [propertyType, userDefinedValue] = propertyString.split(':').map(str => str.trim());
-            propertyType = propertyType.toLowerCase();
-            obj[propertyType] = userDefinedValue;
+      properties.forEach(propertyString => {
+        let [propertyType, userDefinedValue] = propertyString.split('=').map(str => str.trim());
+        propertyType = propertyType.toLowerCase();
+    
+        // Check if propertyType is a Tailwind quick command
+        if (Object.keys(cssQuickCommands).includes(propertyType)) {
+          const quickCommand = cssQuickCommands[propertyType];
+          const quickCommandProperties = quickCommand.split(';').filter(Boolean);
+    
+          quickCommandProperties.forEach(propertyString => {
+            let [quickPropertyType, quickUserDefinedValue] = propertyString.split(':').map(str => str.trim());
+            quickPropertyType = quickPropertyType.toLowerCase();
+            obj[quickPropertyType] = quickUserDefinedValue;
           });
-
         } else {
-          // Split the input to separate properties and handle each individually
-          const properties = propertyTypeInput.split(',').map(prop => prop.trim());
-
-          properties.forEach(propertyString => {
-            let [propertyType, userDefinedValue] = propertyString.split('=').map(str => str.trim());
-            propertyType = propertyType.charAt(0).toLowerCase() + propertyType.slice(1);
-
-            let finalValue;
-
-            if (userDefinedValue) {
-              // Use the user-defined value
-              finalValue = userDefinedValue + (unit && !noUnit.includes(propertyType) ? unit : '');
-            } else {
-              // Use the default value if no value was provided
-              const defaultValue = defaultValues[propertyType] || defaultValues['default'];
-              finalValue = unit ? `${defaultValue}${unit}` : defaultValue;
-            }
-
-            // Apply the final value to the property
-            if (noUnit.includes(propertyType)) {
-              obj[propertyType] = userDefinedValue || "1";
-            } else {
-              obj[propertyType] = finalValue;
-            }
-          });
+          // Handle custom properties
+          let finalValue;
+    
+          if (userDefinedValue) {
+            // Use the user-defined value
+            finalValue = userDefinedValue + (unit && !noUnit.includes(propertyType) ? unit : '');
+          } else {
+            // Use the default value if no value was provided
+            const defaultValue = defaultValues[propertyType] || defaultValues['default'];
+            finalValue = unit ? `${defaultValue}${unit}` : defaultValue;
+          }
+    
+          // Apply the final value to the property
+          if (noUnit.includes(propertyType)) {
+            obj[propertyType] = userDefinedValue || "1";
+          } else {
+            obj[propertyType] = finalValue;
+          }
         }
-
-        App.render("#app");
-        renderPreview();
-        saveState();
-      } else {
-        Modal.render({
-          title: "Unable to add property!",
-          content: "Please enter a valid CSS property or quick command."
-        });
-      }
-    }
+      });
+    
+      App.render("#app");
+      renderPreview();
+      saveState();
+    }    
   });
 }
 window.renameStyleTarget = target => {
@@ -4435,13 +4428,13 @@ window.addPseudo = selector => {
     title: `Add A Pseudo-Class/Element`,
     content: modalContent,
     onLoad() {
-      document.getElementById('pseudo-selector').focus();
+      document.getElementById('pseudo-input').focus();
     },
     onConfirm() {
       const pseudoSelector = document.getElementById('pseudo-selector').value.trim();
       const pseudoStyles = document.getElementById('pseudo-input').value.trim();
 
-      if (pseudoSelector && pseudoStyles) {
+      if (pseudoStyles) {
         // Convert pseudoStyles into an object
         const styles = pseudoStyles.split(';').reduce((acc, rule) => {
           const [property, value] = rule.split(':').map(s => s.trim());
@@ -4449,7 +4442,7 @@ window.addPseudo = selector => {
           return acc;
         }, {});
 
-        const existingPseudo = project.css.styles[selector].pseudos.find(pseudo => pseudo.selector === pseudoSelector);
+        const existingPseudo = project.css.styles[selector].pseudos.find(pseudo => pseudo.selector === pseudoStyles);
 
         if (existingPseudo) {
           // Merge new styles with existing styles if pseudo already exists
@@ -4460,7 +4453,7 @@ window.addPseudo = selector => {
         } else {
           // Add a new pseudo object
           let obj = {
-            "selector": pseudoSelector,
+            "selector": pseudoStyles,
             "styles": styles
           };
           project.css.styles[selector].pseudos.push(obj);
@@ -5972,7 +5965,7 @@ window.selectedBlock = layerId => {
     const newSelectionState = !isSelected;
 
     // If replaceCurrentSelection is true and shiftKey is not pressed, clear all selections
-    if ((data.replaceCurrentSelection || data.cmdKey) && !data.shiftKey) {
+    if (data.cmdKey && !data.shiftKey) {
       data.selectedLayerIds.forEach(id => {
         const layer = findLayerById(id);
         if (layer) {
