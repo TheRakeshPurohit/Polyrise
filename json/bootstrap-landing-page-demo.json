@@ -724,7 +724,7 @@
               "state": {
                 "collapsed": false,
                 "visible": true,
-                "selected": true
+                "selected": false
               },
               "name": "div",
               "type": "box",
