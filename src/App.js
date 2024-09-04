@@ -945,7 +945,7 @@ function LeftMenubar() {
       aria-label="add blocks" 
       name="add blocks" 
       class="w-11 text-sm border-0 px-0 py-3 mb-2"
-      onclick="project.activePanel = project.activePanel === 'blocks' ? null : 'blocks'"
+      onclick="Blocks()"
     >
       ${icons.plus}
     </button>
@@ -2098,7 +2098,7 @@ function Inspector() {
                       validUnits = ['', 'ms', 's']; // Example units for duration properties
                       break;
                   default:
-                      validUnits = ['', 'px', '%', 'rem', 'em', 'vh', 'vw']; // Default units
+                      validUnits = ['', 'px', '%', 'rem', 'em', 'vh', 'lvh', 'svh', 'dvh', 'vw', 'lvw', 'svw', 'dvw']; // Default units
                       break;
               }
       
@@ -3234,7 +3234,7 @@ function Blocks() {
       <button 
         class="${btnClass} border border-solid text-center rounded-md ${project.dark ? "border-gray-800" : "border-gray-200"}"
         style="color: unset;"
-        onclick="addBlock(data.blocks.items[${index}].code)"
+        onclick="addBlock(data.blocks.items[${index}].code);"
       >
         ${block.type}
       </button>`;
@@ -3246,7 +3246,7 @@ function Blocks() {
         <button 
           class="bg-transparent border-0 text-xs capitalize m-0 py-4 px-2"
           style="color: unset;"
-          onclick="addBlock(project.components[${index}].code)"
+          onclick="addBlock(project.components[${index}].code);"
         >
           ${component.name}
         </button>
@@ -3254,14 +3254,14 @@ function Blocks() {
         <button 
           class="bg-transparent border-0 text-xs capitalize m-0 py-4 px-2"
           style="color: unset;"
-          onclick="deleteComponent('${index}')"
+          onclick="deleteComponent('${index}');"
         >
           ${icons.trash}
         </button>
       </div>`;
   });
 
-  let html = `<article class="select-none font-thin">
+  let modalContent = `<article class="select-none font-thin">
         <section class="p-0 m-0">
           <details class="flex items-center mb-0" ${data.blocks.visible ? 'open' : ''} ontoggle="
             const detailsElement = this;
@@ -3308,8 +3308,12 @@ function Blocks() {
         </details>
       </section>
     </article>`;
-  
-  return html;
+
+  // Render the modal
+  Modal.render({
+    title: `Add A Block`,
+    content: modalContent
+  });
 }
 window.App = {
   initialRender: true,
@@ -3391,9 +3395,6 @@ window.App = {
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="absolute inset-0 px-2 py-4 overflow-auto capitalize ${project.activePanel === 'blocks' ? '' : 'hidden'}">
-              ${Blocks()}
             </div>
             <div class="absolute inset-0 flex flex-col ${project.activePanel === 'inspector' ? '' : 'hidden'}">
               <ul class="flex-grow p-2 m-0 overflow-auto">
@@ -6258,6 +6259,7 @@ window.addBlock = html => {
 
   clearAllSelections();
   saveState(); // Save state after making changes
+  document.querySelector('dialog[open]').querySelector('header > button').onclick();
 };
 
 window.selectLayersByStyleRef = (style, layers) => {
