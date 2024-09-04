@@ -68,6 +68,13 @@ let p = {
   pwa: false,
   activePanel: 'layers'
 };
+window.generateId = () => {
+  let id = '';
+  while (!/^[a-zA-Z]/.test(id)) {
+    id = Math.random().toString(36).substr(2, 9);
+  }
+  return id;
+}
 let d = {
   shiftKey: null,
   cmdKey: null,
@@ -620,6 +627,44 @@ let d = {
       {
         type: "meter",
         code: '<meter value="0.6">60%</meter>'
+      },
+      {
+        type: "style",
+        code: {
+          "tag": "style",
+          "id": `${generateId()}`,
+          "style": "",
+          "state": {
+            "collapsed": false,
+            "visible": true,
+            "selected": false
+          },
+          "name": "style",
+          "type": "style",
+          "text": "",
+          "props": {
+            "type": "text/css"
+          }
+        }
+      },
+      {
+        type: "script",
+        code: {
+          "tag": "script",
+          "id": `${generateId()}`,
+          "style": "",
+          "state": {
+            "collapsed": false,
+            "visible": true,
+            "selected": false
+          },
+          "name": "script",
+          "type": "script",
+          "text": "",
+          "props": {
+            "type": "text/javascript"
+          }
+        }
       },
       {
         type: "hr",
@@ -2257,7 +2302,15 @@ function Inspector() {
           delete
         </button>
       </div>` : ''}
-      ${data.stylesTarget ? `<div class="grid grid-cols-1 gap-1 items-center capitalize">
+      ${data.stylesTarget ? `<div class="grid grid-cols-2 gap-1 items-center capitalize">
+        <button 
+          aria-label="duplicate the ${data.stylesTarget} style"
+          name="duplicate the ${data.stylesTarget} style"
+          class="${RenameOrDeleteButtonClass} p-2 border ${project.dark ? "border-gray-700" : "border-gray-300"}"
+          style="color: unset;"
+          onclick="duplicateStyle();">
+          duplicate
+        </button>
         <button 
           aria-label="de-select the ${data.stylesTarget} style"
           name="de-select the ${data.stylesTarget} style"
@@ -3620,6 +3673,56 @@ window.addStyle = () => {
     }
   });
 }
+window.duplicateStyle = () => {
+  let modalContent = `
+    <input 
+      id="vvrh9nxwk" 
+      type="text" 
+      value=".${generateId()}"
+      placeholder="Style name/target..."
+      onkeydown="
+        if (event.key === 'Enter') {
+          document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
+        }
+      ">
+  `;
+  
+  // Render the modal
+  Modal.render({
+    title: `Name your style`,
+    content: modalContent,
+    onLoad() {
+      document.getElementById('vvrh9nxwk').focus();
+      document.getElementById('vvrh9nxwk').select();
+    },
+    onConfirm() {
+      let value = document.getElementById('vvrh9nxwk').value;
+      if (value) {
+        // Convert the first character to lowercase
+        value = value.charAt(0).toLowerCase() + value.slice(1);
+        
+        let obj = project.css.styles;
+        if (data.breakpointKey && data.stylesTarget) {
+          obj = project.css.breakpoints[`${data.breakpointKey}px`];
+        }
+
+        if (obj[`${value}`]) {
+          Modal.render({
+            title: `Unable to add style!`,
+            content: "Style already exists!"
+          });
+        } else {
+          obj[value] = obj[data.stylesTarget];
+        }
+      } else {
+        Modal.render({
+          title: `Unable to add style`,
+          content: "No value detected!"
+        });
+      }
+    }
+  });
+}
 window.addStylePropModal = (id, obj) => {
   // Define default values for each property type
   const defaultValues = data.defaultValues;
@@ -4741,7 +4844,11 @@ window.json2html = input => {
       html += '>';
     
       if (element.text) {
-        html += escapeHtml(element.text);
+        if (element.tag === 'style' || element.tag === 'script') {
+          html += element.text;
+        } else {
+          html += escapeHtml(element.text);
+        }
       }
     
       if (element.children) {
@@ -5423,7 +5530,7 @@ window.customCode = () => {
       document.getElementById('op95hyy3l').focus();
       document.getElementById('op95hyy3l').select();
     },
-    onConfirm: function() {
+    onConfirm() {
       const selection = document.getElementById('bvk1c6j4o').value;
       let code = document.getElementById('op95hyy3l').value;
       if (selection === 'html') {
@@ -6100,6 +6207,22 @@ window.addBlock = html => {
     }
   };
 
+  // Function to handle processing of HTML string or object
+  const processHtmlOrObject = (html) => {
+    if (typeof html === 'string') {
+      return html2json(html); // Convert HTML string to JSON
+    } else if (typeof html === 'object') {
+      // Assume it's already a block object or an array of block objects
+      return Array.isArray(html) ? html : [html];
+    } else {
+      console.error('Invalid HTML input. Expected a string or an object.');
+      return [];
+    }
+  };
+
+  // Process the input HTML or object
+  const newBlocks = processHtmlOrObject(html);
+  
   if (data.selectedLayerIds.length > 0) {
     // If user has multiple layers selected
     data.selectedLayerIds.forEach(id => {
@@ -6112,7 +6235,6 @@ window.addBlock = html => {
           layer.children = layer.children || [];
 
           // Assign IDs and then push new blocks
-          const newBlocks = html2json(html); // Convert HTML to JSON
           assignIds(newBlocks, () => {
             newBlocks.forEach(newBlock => {
               layer.children.push(newBlock); // Push new block after ID assignment
@@ -6123,7 +6245,6 @@ window.addBlock = html => {
     });
   } else {
     // If user has no layers selected, add to the root layer structure
-    const newBlocks = html2json(html); // Convert HTML to JSON
     assignIds(newBlocks, () => {
       newBlocks.forEach(newBlock => project.html.push(newBlock)); // Push new block after ID assignment
     });
@@ -6133,6 +6254,7 @@ window.addBlock = html => {
   saveState(); // Save state after making changes
   renderPreview();
 };
+
 window.selectLayersByStyleRef = (style, layers) => {
   for (const layer of layers) {
     // Deselect all layers
@@ -7011,13 +7133,6 @@ window.updateVersionPart = (part, value) => {
 }
 
 // iframe functions
-window.generateId = () => {
-  let id = '';
-  while (!/^[a-zA-Z]/.test(id)) {
-    id = Math.random().toString(36).substr(2, 9);
-  }
-  return id;
-}
 window.resizeCanvas = size => {
   data.selectedSize = size;
   getIFrameClientSize();
@@ -7495,6 +7610,7 @@ window.fetchResources = obj => {
     const css = json2css(obj.css) || '';
     const updatedCss = extractBackgroundImageUrls(css);
     const stylesObj = updatedCss;
+    body.querySelectorAll('style').forEach(style => style.remove());
 
     return {
       html: doc.body.innerHTML,
@@ -7864,6 +7980,7 @@ ${app.summary} ${app.description}
     let cssBuildItemsString = '';
     let TailwindNoReset = null;
     const promises = project.libraries.map(async library => {
+      if (!library.endsWith(['.css', '.js'])) return false;
       const data = await getFile(library);
       const parts = library.split("/");
       const name = parts[parts.length - 1];
@@ -7917,7 +8034,11 @@ ${app.summary} ${app.description}
       tailwindStyles = idoc.getElementById('vyhibnq91').textContent;
     }
 
-    let css = stylesObj;
+    // Extract and join the content of all <style> tags into a single string
+    const combinedStyles = Array.from(idoc.body.querySelectorAll('style'))
+    .map(style => style.textContent)
+    .join('\n');
+    let css = stylesObj + combinedStyles;
     if (tailwindStyles) css += tailwindStyles;
     if (cssContent) {
       css4html = `<link rel="stylesheet" href="dist/bundle.css">
@@ -8173,38 +8294,37 @@ workbox.routing.registerRoute(
   
     // Add index.html
     const testHtmlContent = `<!DOCTYPE html>
-    <html lang="en" data-theme="${project.dark ? 'dark' : 'light'}">
-      <head>
-        <title>${project.title}</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, interactive-widget=resizes-content">
-        <meta name="description" content="${project.description}">
-        <meta name="author" content="${project.author}">
-        <meta name="mobile-web-app-capable" content="yes">
-        <meta name="application-name" content="${project.title}">
-        <meta name="theme-color" content="hsl(205deg 18.75% 87.45%)">
-        <meta name="apple-mobile-web-app-title" content="${project.title}">
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="msapplication-starturl" content="./index.html">
-        <meta name="msapplication-navbutton-color" content="hsl(205deg 18.75% 87.45%)">
-        <meta property="og:url" content="${project.url}" />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="${project.title}" />
-        <meta property="og:description" content="${project.description}" />
-        <link rel="manifest" href="manifest.json">
-        <link rel="shortcut icon" type="image/x-icon" href="imgs/logo.svg">
-        <link rel="icon" type="image/svg+xml" href="imgs/logo.svg" />
-        <link rel="apple-touch-icon" href="imgs/logo.svg">
-        ${css4html}${project.meta ? `${project.meta}\n  ` : ''}
-      </head>
-      <body>
-        
-${json2html(project.html)}
-${scriptTags ? scriptTags : ''}
+<html lang="en" data-theme="${project.dark ? 'dark' : 'light'}">
+  <head>
+    <title>${project.title}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, interactive-widget=resizes-content">
+    <meta name="description" content="${project.description}">
+    <meta name="author" content="${project.author}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="${project.title}">
+    <meta name="theme-color" content="hsl(205deg 18.75% 87.45%)">
+    <meta name="apple-mobile-web-app-title" content="${project.title}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="msapplication-starturl" content="./index.html">
+    <meta name="msapplication-navbutton-color" content="hsl(205deg 18.75% 87.45%)">
+    <meta property="og:url" content="${project.url}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="${project.title}" />
+    <meta property="og:description" content="${project.description}" />
+    <link rel="manifest" href="manifest.json">
+    <link rel="shortcut icon" type="image/x-icon" href="imgs/logo.svg">
+    <link rel="icon" type="image/svg+xml" href="imgs/logo.svg" />
+    <link rel="apple-touch-icon" href="imgs/logo.svg">
+    ${cssTags}${css4html}${project.meta ? `${project.meta}\n  ` : ''}${scriptTags ? scriptTags : ''}
+  </head>
+  <body>
+    
+${json2html(project.html).replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')}
 
-      </body>
-    </html>`;
+  </body>
+</html>`;
     zip.file('test.html', testHtmlContent);
     const indexHtmlContentCompiled = `<!DOCTYPE html>
 <html lang="en" data-theme="${project.dark ? 'dark' : 'light'}">
@@ -8230,7 +8350,7 @@ ${scriptTags ? scriptTags : ''}
     <link rel="shortcut icon" type="image/x-icon" href="imgs/logo.svg">
     <link rel="icon" type="image/svg+xml" href="imgs/logo.svg" />
     <link rel="apple-touch-icon" href="imgs/logo.svg">
-    ${css4html}${project.meta ? `${project.meta}\n  ` : ''}${scriptTags ? scriptTags : ''}
+    ${cssTags}${css4html}${project.meta ? `${project.meta}\n  ` : ''}${scriptTags ? scriptTags : ''}
   </head>
   <body>
     
@@ -8384,11 +8504,11 @@ window.renderPreview = (forceRun = false) => {
     ${project.meta ? project.meta : ''}
     ${cssTags}
     <style>${css}</style>
+    ${scriptTags ? scriptTags : ''}
   </head>
   <body>
 
 ${json2html(project.html)}
-${scriptTags ? scriptTags : ''}
     <script>
       // Intercept hash changes within the iframe
       window.addEventListener('click', function(event) {
