@@ -1,33 +1,45 @@
 // Function for reactive state management
-function onChange(target, callback, path = []) {
-  function createProxy(target, path) {
-    if (typeof target !== 'object' || target === null) {
-      return target;
-    }
-
-    return new Proxy(target, {
-      set(obj, property, value) {
-        const fullPath = [...path, property];
-        const oldValue = obj[property];
-        const result = Reflect.set(obj, property, createProxy(value, fullPath));
-
-        if (oldValue !== value) {
-          callback(fullPath, oldValue, value);
-        }
-
-        return result;
-      },
-      get(obj, property) {
-        const value = obj[property];
-        if (typeof value === 'object' && value !== null) {
-          return createProxy(value, [...path, property]);
-        }
-        return value;
-      }
-    });
+function createProxy(target, callback, path = '') {
+  if (typeof target !== 'object' || target === null) {
+    return target;
   }
 
-  return createProxy(target, path);
+  return new Proxy(target, {
+    get(obj, prop) {
+      const fullPath = path ? `${path}.${String(prop)}` : String(prop);
+      const value = obj[prop];
+      return createProxy(value, callback, fullPath);
+    },
+
+    set(obj, prop, value) {
+      const fullPath = path ? `${path}.${String(prop)}` : String(prop);
+      const oldValue = obj[prop];
+
+      // Handle object comparison
+      if (typeof value === 'object' && value !== null) {
+        if (JSON.stringify(oldValue) !== JSON.stringify(value)) {
+          obj[prop] = createProxy(value, callback, fullPath);
+          callback(fullPath, oldValue, value);
+        }
+      } else {
+        // Handle primitive value comparison
+        if (oldValue !== value) {
+          obj[prop] = value;
+          callback(fullPath, oldValue, value);
+        }
+      }
+
+      return true;
+    },
+
+    deleteProperty(obj, prop) {
+      const fullPath = path ? `${path}.${String(prop)}` : String(prop);
+      const oldValue = obj[prop];
+      delete obj[prop];
+      callback(fullPath, oldValue, undefined);
+      return true;
+    }
+  });
 }
 
 // Keep project and data in the global scope
@@ -828,28 +840,52 @@ const icons = (function() {
 })();
 
 // Reactive objects
-window.project = onChange(p, (property, oldValue, newValue) => {
+window.project = createProxy(p, (property, oldValue, newValue) => {
   if (oldValue !== newValue) {
     localStorage.setItem('Polyrise', JSON.stringify(project));
-    App.render('#app');
-    let string = property.toString();
-    if (string === 'activePanel') getIFrameClientSize();
-    if (!App.initialRender) {
-      // diff nodes
-      const diff = ['lang', 'libraries', 'html', 'styles', 'title', 'description', 'author', 'url', 'meta', 'previewDark'];
-      if (diff.includes(string)) renderPreview();
+    
+    // Split the property path into components
+    const propertyParts = property.split('.');
 
-      if (string === "dark") {
+    // Check for specific property changes
+    if (propertyParts[0] === 'activePanel') {
+      getIFrameClientSize();
+    }
+
+    if (!App.initialRender) {
+      // List of properties that should not trigger App.render
+      const noRenderProps = ['lang', 'title', 'description', 'author', 'url', 'meta', 'previewDark'];
+
+      // Check if the change is within project.html and is a text property
+      if (propertyParts[0] === 'html' && propertyParts.includes('text')) {
+        // Only text property changed, so only render preview
+        renderPreview();
+      } else if (noRenderProps.includes(propertyParts[0])) {
+        // If the changed property is in noRenderProps, only render the preview
+        renderPreview();
+      } else {
+        // Handle full render or specific actions
         App.render('#app');
-        document.documentElement.setAttribute('data-theme', project.dark ? 'dark' : 'light');
-        document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]').setAttribute('content', project.dark ? 'black-translucent' : 'default');
-        document.querySelector('meta[name=theme-color]').setAttribute('content', project.dark ? '#13171f' : '#ffffff');
-        document.querySelector('meta[name=msapplication-navbutton-color]').setAttribute('content', project.dark ? '#13171f' : '#ffffff');
+
+        // Diff nodes for other changes
+        const diff = ['lang', 'libraries', 'html', 'css', 'title', 'description', 'author', 'url', 'meta', 'previewDark'];
+        if (diff.includes(propertyParts[0])) {
+          renderPreview();
+        }
+
+        if (propertyParts[0] === "dark") {
+          App.render('#app');
+          document.documentElement.setAttribute('data-theme', project.dark ? 'dark' : 'light');
+          document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]').setAttribute('content', project.dark ? 'black-translucent' : 'default');
+          document.querySelector('meta[name=theme-color]').setAttribute('content', project.dark ? '#13171f' : '#ffffff');
+          document.querySelector('meta[name=msapplication-navbutton-color]').setAttribute('content', project.dark ? '#13171f' : '#ffffff');
+        }
       }
     }
   }
 });
-window.data = onChange(d, (property, oldValue, newValue) => {
+
+window.data = createProxy(d, (property, oldValue, newValue) => {
   // Only render if the actual value has changed
   if (oldValue !== newValue) {
     const string = property.toString();
@@ -2018,7 +2054,7 @@ function Inspector() {
                 ">
                     ${prop}
                 </button>
-                <select class="${selectClass}" style="${selectStyle}" onchange="${selector} = this.value; renderPreview(); saveState();">
+                <select class="${selectClass}" style="${selectStyle}" onchange="${selector} = this.value; saveState();">
                     ${options}
                 </select>`;
         } else if (cssRangedValueProperties[prop]) {
@@ -2070,7 +2106,6 @@ function Inspector() {
                   const valueParts = ${selectorPrefix}['${prop}'].split(' ');
                   valueParts[${index}] = '${numericValue}' + this.value;
                   ${selector} = valueParts.join(' ')${remainingParts.length > 0 ? ` + ' ' + '${remainingParts.join(' ')}'` : ''};
-                  renderPreview();
                   saveState();
                   ">${validUnits.map(unitOption => 
                       `<option value="${unitOption}" ${unitOption === unit ? 'selected' : ''}>${unitOption}</option>`
@@ -2080,8 +2115,7 @@ function Inspector() {
                   type="range" min="${min}" max="${max}" step="${step}" value="${numericValue}"
                   oninput="const valueParts = ${selectorPrefix}['${prop}'].split(' ');
                   valueParts[${index}] = this.value + '${unit}';
-                  ${selector} = valueParts.join(' ')${remainingParts.length > 0 ? ` + ' ' + '${remainingParts.join(' ')}'` : ''};
-                  renderPreview();"
+                  ${selector} = valueParts.join(' ')${remainingParts.length > 0 ? ` + ' ' + '${remainingParts.join(' ')}'` : ''};"
                   onfocus="saveState();" onblur="saveState();">`;
       
               styles += `
@@ -2089,8 +2123,7 @@ function Inspector() {
                       type="number" min="${min}" max="${max}" step="${step}" value="${numericValue}"
                       oninput="const valueParts = ${selectorPrefix}['${prop}'].split(' ');
                       valueParts[${index}] = this.value + '${unit}';
-                      ${selector} = valueParts.join(' ')${remainingParts.length > 0 ? ` + ' ' + '${remainingParts.join(' ')}'` : ''};
-                      renderPreview();"
+                      ${selector} = valueParts.join(' ')${remainingParts.length > 0 ? ` + ' ' + '${remainingParts.join(' ')}'` : ''};"
                       onfocus="saveState();" onblur="saveState();">
                   ${prop === 'opacity' || prop === 'z-index' ? rangeElement : selectElement}`;
           });
@@ -2100,7 +2133,7 @@ function Inspector() {
               styles += `
                   <input class="${inputClass}" style="${inputStyle}" 
                       type="text" value="${value}" 
-                      oninput="${selector} = this.value; renderPreview(); saveState();">
+                      oninput="${selector} = this.value; saveState();">
               `;
           }
       
@@ -2117,7 +2150,7 @@ function Inspector() {
                     ${prop}
                 </button>
                 <textarea class="${textareaClass}" style="${textareaStyle}"
-                    oninput="${selector} = this.value; renderPreview(); saveState();">${value}</textarea>`;
+                    oninput="${selector} = this.value; saveState();">${value}</textarea>`;
         } else {
             // Check if the property is a color property
             const isColorProperty = colorRegex.test(value) || value === null;
@@ -2139,7 +2172,7 @@ function Inspector() {
                     ${prop}
                 </button>
                 <input class="${inputClass}" style="${updatedInputStyle}" type="${inputType}" value="${fallbackColor}" 
-                    oninput="${selector} = this.value; renderPreview(); saveState();">`;
+                    oninput="${selector} = this.value; saveState();">`;
         }
     });
 
@@ -2185,7 +2218,7 @@ function Inspector() {
           style="${inputStyle}" 
           type="${inputType}" 
           value="${value}" 
-          oninput="${selector} = this.value; renderPreview();" 
+          oninput="${selector} = this.value;" 
           onfocus="saveState()" 
           onblur="saveState()"
         />
@@ -2241,7 +2274,6 @@ function Inspector() {
       style="${selectStyle}"
       onchange="
         data.stylesPropTarget = this.value;
-        App.render('#app');
       "
     >
       <option value="base" ${data.stylesPropTarget === 'base' ? 'selected' : ''}>base</option>
@@ -3419,7 +3451,7 @@ window.App = {
                   <div id="previewElm" class="relative grid grid-cols-1 align-center items-center w-full h-full">
                     <iframe
                       id="iframe"
-                      title="${project.title}"
+                      title="iframe title"
                       class="bg-white ${data.selectedSize !== 'none' ? `border border-solid ${project.dark ? "border-gray-800" : "border-gray-200"} shadow-2xl shadow-blue-500` : ''}"
                       style="${data.selectedSize === 'none' ? 'width: 100%; height: 100%' : `
       width: ${width}px;
@@ -3558,10 +3590,7 @@ window.modifyRootVariable = id => {
           onclick="
             saveState();
             delete project.css.rootVariables['${id}']; 
-            localStorage.setItem('Polyrise', JSON.stringify(project));
             saveState();
-            App.render('#app');
-            renderPreview();
             document.querySelector('dialog[open]').querySelector('header > button:last-child').onclick();
           ">
           Delete Variable
@@ -3608,8 +3637,6 @@ window.modifyRootVariable = id => {
           localStorage.setItem('Polyrise', JSON.stringify(project));
 
           saveState();
-          App.render("#app");
-          renderPreview();
         }
       } else {
         Modal.render({
@@ -3864,8 +3891,6 @@ window.addStylePropModal = (id, obj) => {
         }
       });
     
-      App.render("#app");
-      renderPreview();
       saveState();
     }    
   });
@@ -3911,10 +3936,6 @@ window.renameStyleTarget = target => {
           data.stylesTarget = value;
 
           saveState();
-
-          // re-render the ui
-          App.render('#app');
-          renderPreview();
         }
       } else {
         Modal.render({
@@ -3938,7 +3959,6 @@ window.deleteStyleTarget = target => {
         delete project.css.styles[data.stylesTarget];
         data.stylesTarget = null;
         saveState();
-        renderPreview();
       }
     }
   });
@@ -4334,10 +4354,6 @@ window.deleteStyleProp = (id, prop, e, detect = null) => {
 
   // Remove the modal
   e.closest('dialog[open]').remove();
-
-  // Re-render the app and preview
-  App.render("#app");
-  renderPreview();
 }
 window.clearStyles = (layers, query, callback) => {
   // first delete the style object
@@ -4463,8 +4479,6 @@ window.styleModal = (id, prop, currentValue, detect = null) => {
       }
 
       saveState();
-      App.render("#app");
-      renderPreview();
     }
   });
 }
@@ -4562,8 +4576,6 @@ window.addPseudo = selector => {
           project.css.styles[selector].pseudos.push(obj);
         }
 
-        App.render("#app");
-        renderPreview();
         saveState();
       } else {
         Modal.render({
@@ -4688,7 +4700,6 @@ window.deletePseudo = () => {
       data.pseudosSelectorIndex = 0;
       style.pseudos.splice(pseudoIndex, 1);
       saveState();
-      renderPreview();
     }
   });
 }
@@ -5539,7 +5550,6 @@ window.customCode = () => {
         code = minifyCSS(code);
         const newJSON = css2json(code);
         mergeCSSJSON(project.css, newJSON);
-        renderPreview();
       }
     }
   });
@@ -5853,7 +5863,6 @@ window.executeQuery = (queriesString, replaceSelection = true) => {
       if (data.selectedLayerIds.length > 0) {
         if (replaceSelection) clearAllSelections();
         clearStyles(project.html, query.slice(3), () => {
-          renderPreview();
           saveState();  // Callback after clearStyles completes
         });
       }
@@ -5941,7 +5950,6 @@ window.hideAllLayers = (state = false) => {
   if (project.activePanel !== 'layers') project.activePanel = 'layers';
   function hideLayer(layer) {
     layer.state.visible = !state;
-    renderPreview();
     if (layer.children) layer.children.forEach(child => hideLayer(child));
   }
 
@@ -6007,8 +6015,6 @@ window.toggleVisible = layerId => {
         applyVisibilityToSiblings(project.html, newVisibilityState);
       }
     }
-
-    renderPreview(); // Ensure the preview is updated
   }
 }
 window.selectedBlock = layerId => {
@@ -6252,7 +6258,6 @@ window.addBlock = html => {
 
   clearAllSelections();
   saveState(); // Save state after making changes
-  renderPreview();
 };
 
 window.selectLayersByStyleRef = (style, layers) => {
@@ -6288,7 +6293,6 @@ window.removeLayerById = (id, layers) => {
     if (layer.id === id) {
       const index = layers.findIndex(l => l.id === id);
       layers.splice(index, 1); // Remove layer from the main layers array
-      renderPreview();
       return;
     }
 
@@ -6296,7 +6300,6 @@ window.removeLayerById = (id, layers) => {
       const index = layer.children.findIndex(child => child.id === id);
       if (index !== -1) {
         layer.children.splice(index, 1); // Remove from children
-        renderPreview();
         return;
       } else {
         removeLayerById(id, layer.children); // Recursively remove from nested layers
@@ -6336,7 +6339,6 @@ window.cloneLayers = () => {
 
   clearAllSelections(); // Clear selection after cloning
   saveState(); // Save state after making changes
-  renderPreview();
 }
 window.cloneLayerObject = (layer) => {
   const clonedLayer = JSON.parse(JSON.stringify(layer)); // Deep clone
@@ -6391,7 +6393,6 @@ window.pasteLayers = () => {
     data.clipboard = []; // Clear clipboard after pasting
     clearAllSelections(); // Clear selection after pasting
     saveState(); // Save state after making changes
-    renderPreview();
   }
 }
 window.removeAttributeFromLayers = property => {
@@ -6402,7 +6403,6 @@ window.removeAttributeFromLayers = property => {
     if (layer) delete layer.props[property];
   });
   saveState();
-  renderPreview();
 }
 window.removeProp = key => {
   Modal.render({
@@ -6427,7 +6427,6 @@ window.emptyChildren = () => {
     });
   }
   saveState(); // Save state after making changes
-  renderPreview();
 }
 window.updateElement = (key, propKey, value) => {
   data.selectedLayerIds.forEach(id => {
@@ -6444,7 +6443,6 @@ window.updateElement = (key, propKey, value) => {
       }
     }
   });
-  renderPreview();
 }
 window.updateImageMedia = (id, type) => {
   let target = findLayerById(id, project.html).layer.props['src'];
@@ -6525,7 +6523,6 @@ window.updateImageMedia = (id, type) => {
             saveState();
             layer.props[`src`] = document.getElementById('p8gnvn4o7').src;
             saveState();
-            renderPreview();
           }
         }
       });
@@ -6684,8 +6681,6 @@ window.updateAudioMedia = (id, type) => {
           findLayerById(id, project.html).layer.state.selected = null;
           findLayerById(id, project.html).layer.state.selected = true;
           saveState();
-          
-          renderPreview();
         }
       });
     }
@@ -6839,7 +6834,6 @@ window.updateSvgMedia = async (id, type) => {
             findLayerById(id, project.html).layer.state.selected = null;
             findLayerById(id, project.html).layer.state.selected = true;
             saveState();
-            renderPreview();
           }
         }
       });
