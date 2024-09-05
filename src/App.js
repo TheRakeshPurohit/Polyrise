@@ -4966,12 +4966,15 @@ window.css2json = css => {
   if (typeof css !== 'string') {
     throw new Error("Input must be a CSS string");
   }
+
   const json = {
     rootVariables: {},
     styles: {},
     animations: {},
     breakpoints: {}
   };
+
+  css = minifyCSS(css)
 
   // Handle @import statements
   const importRegex = /@import\s+url\(['"]([^'"]+)['"]\);/g;
@@ -4987,25 +4990,28 @@ window.css2json = css => {
   // Remove @import statements from CSS
   css = css.replace(importRegex, '');
 
-  // Function to remove comments from CSS
-  function removeComments(css) {
-    return css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
-  }
-
-  css = removeComments(css);
-
-  const selectorRegex = /([^{@]+)\{([^}]+)\}/g;
+  const keyframesRegex = /@keyframes\s+([^{\s]+)\s*\{([^}]*(\{[^}]*\})[^}]*)\}/g;
   const mediaQueryRegex = /@media\s*([^{]+)\s*\{([\s\S]*?\{[\s\S]*?\})\s*}/g;
-  const keyframesRegex = /@keyframes\s+([^{\s]+)\s*\{([^}]*\{[^}]*\}[^}]*)\}/g;
+  const selectorRegex = /([^{]+?)\s*(\{([^}]+)\})/g;
+
+  // Decode URL-encoded characters
+  function decodeURIComponentSafe(str) {
+    try {
+      return decodeURIComponent(str);
+    } catch {
+      return str;
+    }
+  }
 
   function processSelector(selector, properties, target) {
     selector = selector.trim();
+    if (selector.startsWith('@keyframes')) return;
 
     if (selector === ":root") {
       properties.split(';').forEach(prop => {
         const [varName, varValue] = prop.split(":").map(part => part.trim());
         if (varName && varValue) {
-          json.rootVariables[varName] = varValue;
+          json.rootVariables[varName] = decodeURIComponentSafe(varValue);
         }
       });
       return;
@@ -5038,19 +5044,31 @@ window.css2json = css => {
       currentTarget = currentTarget['base'];
     }
 
-    properties.split(';').forEach(prop => {
-      const [property, value] = prop.split(":").map(part => part.trim());
-      if (property && value) {
-        currentTarget[property] = value;
+    // Use regex to handle property-value pairs
+    const propertyRegex = /([a-zA-Z-]+)\s*:\s*(.*?)(?=;|$)/g;
+    let match;
+    while ((match = propertyRegex.exec(properties)) !== null) {
+      const property = match[1].trim();
+      const value = match[2].trim();
+
+      // Special handling for url(...) values
+      const urlRegex = /^url\(['"]?(.*?)['"]?\)$/i;
+      const urlMatch = value.match(urlRegex);
+
+      if (urlMatch) {
+        const urlContent = urlMatch[1].trim(); // Extract URL content and trim
+        currentTarget[property] = `url("${decodeURIComponentSafe(urlContent)}")`;
+      } else {
+        currentTarget[property] = decodeURIComponentSafe(value);
       }
-    });
+    }
   }
 
   function processRules(cssRules, target) {
     let match;
     while ((match = selectorRegex.exec(cssRules)) !== null) {
       const selector = match[1].trim();
-      const properties = match[2].trim();
+      const properties = match[3].trim();
       processSelector(selector, properties, target);
     }
   }
@@ -5068,13 +5086,21 @@ window.css2json = css => {
           const [property, value] = prop.split(':').map(p => p.trim());
           if (property && value) {
             keyframes[keyframeName] = keyframes[keyframeName] || {};
-            keyframes[keyframeName][property] = value;
+            keyframes[keyframeName][property] = decodeURIComponentSafe(value);
           }
         });
       }
     });
 
     json.animations[keyframesName] = { keyframes };
+  }
+
+  // Process keyframes
+  let keyframesMatch;
+  while ((keyframesMatch = keyframesRegex.exec(css)) !== null) {
+    const keyframesName = keyframesMatch[1].trim();
+    const keyframesRules = keyframesMatch[2].trim();
+    processKeyframes(keyframesName, keyframesRules);
   }
 
   // Process media queries
@@ -5095,13 +5121,8 @@ window.css2json = css => {
   // Process remaining CSS rules
   processRules(cssWithoutMedia, json.styles);
 
-  // Process keyframes
-  let keyframesMatch;
-  while ((keyframesMatch = keyframesRegex.exec(css)) !== null) {
-    const keyframesName = keyframesMatch[1].trim();
-    const keyframesRules = keyframesMatch[2].trim();
-    processKeyframes(keyframesName, keyframesRules);
-  }
+  // Remove keyframes from CSS
+  css = css.replace(keyframesRegex, '');
 
   // Remove any empty selectors or unnecessary properties
   Object.keys(json.styles).forEach(selector => {
@@ -5111,7 +5132,8 @@ window.css2json = css => {
   });
 
   return json;
-}
+};
+
 window.json2css = styles => {
   let css = '';
   let symbol = "";
