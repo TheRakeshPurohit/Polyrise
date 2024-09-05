@@ -675,7 +675,7 @@ let d = {
           "type": "script",
           "text": "",
           "props": {
-            "type": "text/javascript"
+            "type": "module"
           }
         }
       },
