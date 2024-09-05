@@ -1978,13 +1978,28 @@ function Inspector() {
   function renderInput(name, type, value, min, max, step) {
     return `
       <button class="${buttonItemClass}" style="color: unset;" onclick="removeProp('${name}')">${name}</button>
-      <input class="${inputClass}" style="${inputStyle}" type="${type}" value="${value}" ${min ? `min="${min}"` : ''} ${max ? `max="${max}"` : ''} ${step ? `step="${step}"` : ''} oninput="updateElement('props', '${name}', this.value)" onfocus="saveState()" onblur="saveState()"/>
+      <input 
+        class="${inputClass}" 
+        style="${inputStyle}" 
+        type="${type}" 
+        placeholder="Use {n} for incremental text" 
+        value="${value}" ${min ? `min="${min}"` : ''} ${max ? `max="${max}"` : ''} ${step ? `step="${step}"` : ''} 
+        oninput="updateElement('props', '${name}', this.value)" 
+        onfocus="saveState()" 
+        onblur="saveState()"
+      />
     `;
   }
   function renderTextarea(name, value) {
     return `
       <button class="${buttonItemClass}" style="color: unset;" onclick="removeProp('${name}')">${name}</button>
-      <textarea class="${textareaClass}" style="${textareaStyle}" oninput="updateElement('props', '${name}', this.value)" onfocus="saveState()" onblur="saveState()"/>${value}</textarea>
+      <textarea 
+        class="${textareaClass}" 
+        style="${textareaStyle}" 
+        placeholder="Use {n} for incremental text" 
+        oninput="updateElement('props', '${name}', this.value)" 
+        onfocus="saveState()" 
+        onblur="saveState()"/>${value}</textarea>
     `;
   }
   
@@ -3048,12 +3063,23 @@ function Inspector() {
           }
         });
       }
-  
+    }
+
+    if (Object.keys(commonAttributes).length > 0 || selectedLayers.length >= 0) {
+      const layer = selectedLayers[0];
+      const tag = layer.tag;
+
       if ("text" in layer || layer.text) {
         if (tag === "textarea" || tag === "style" || tag === "script") {
           attributes += `
             <span class="${buttonItemClass}">text</span>
-            <textarea class="${textareaClass}" style="${textareaStyle}" oninput="updateElement('text', null, this.value)" onfocus="saveState()" onblur="saveState()"/>${layer.text}</textarea>
+            <textarea 
+              class="${textareaClass}" 
+              style="${textareaStyle}" 
+              placeholder="Use {n} for incremental text" 
+              oninput="updateElement('text', null, this.value)" 
+              onfocus="saveState()" 
+              onblur="saveState()"/>${layer.text}</textarea>
           `;
         } else {
           // attributes += `
@@ -3062,7 +3088,13 @@ function Inspector() {
           // `;
           attributes += `
             <span class="${buttonItemClass}">text</span>
-            <textarea class="${textareaClass}" style="${textareaStyle}" oninput="updateElement('text', null, this.value)" onfocus="saveState()" onblur="saveState()"/>${layer.text}</textarea>
+            <textarea 
+              class="${textareaClass}" 
+              style="${textareaStyle}" 
+              placeholder="Use {n} for incremental text" 
+              oninput="updateElement('text', null, this.value)" 
+              onfocus="saveState()" 
+              onblur="saveState()"/>${layer.text}</textarea>
           `;
         }
       }
@@ -6468,17 +6500,36 @@ window.emptyChildren = () => {
   saveState(); // Save state after making changes
 }
 window.updateElement = (key, propKey, value) => {
-  data.selectedLayerIds.forEach(id => {
+  const incrementPattern = /{n}/g; // Pattern to detect increment placeholder
+  
+  data.selectedLayerIds.forEach((id, index) => {
     const { layer } = findLayerById(id, project.html);
     if (layer) {
       if (key !== 'props') {
-        if (key === 'text' && !value) {
-          layer.text = "";
+        if (key === 'text') {
+          if (!value) {
+            layer.text = "";
+          } else {
+            // Check if the value contains the increment pattern {n}
+            if (incrementPattern.test(value)) {
+              // Replace {n} with the current index + 1 to increment
+              layer.text = value.replace(incrementPattern, index + 1);
+            } else {
+              layer.text = value;
+            }
+          }
         } else {
+          // General case for non-text keys
           layer[`${key}`] = value;
         }
       } else {
-        layer.props[`${propKey}`] = value;
+        // Handling props (e.g., attributes) similarly
+        if (incrementPattern.test(value)) {
+          // Replace {n} in propKey values
+          layer.props[`${propKey}`] = value.replace(incrementPattern, index + 1);
+        } else {
+          layer.props[`${propKey}`] = value;
+        }
       }
     }
   });
