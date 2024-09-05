@@ -6502,6 +6502,7 @@ window.emptyChildren = () => {
 window.updateElement = (key, propKey, value) => {
   const incrementPattern = /{n}/g; // Pattern to detect increment placeholder
   
+  saveState();
   data.selectedLayerIds.forEach((id, index) => {
     const { layer } = findLayerById(id, project.html);
     if (layer) {
@@ -6533,6 +6534,7 @@ window.updateElement = (key, propKey, value) => {
       }
     }
   });
+  saveState();
 }
 window.updateImageMedia = (id, type) => {
   let target = findLayerById(id, project.html).layer.props['src'];
