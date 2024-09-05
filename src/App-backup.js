@@ -117,6 +117,7 @@ let d = {
   animationKeyframe: null,
   canUseQuickCommands: null,
   cssQuickCommands: {},
+  increment: 1,
   defaultValues: {
     "animation": "none",
     "animation-delay": "0s",
@@ -6215,7 +6216,7 @@ window.addBlock = html => {
   };
 
   // Function to handle processing of HTML string or object
-  const processHtmlOrObject = (html) => {
+  const processHtmlOrObject = html => {
     if (typeof html === 'string') {
       return html2json(html); // Convert HTML string to JSON
     } else if (typeof html === 'object') {
@@ -6310,39 +6311,75 @@ window.removeLayerById = (id, layers) => {
   }
 }
 window.cloneLayers = () => {
-  saveState(); // Save state before making changes
-  data.selectedLayerIds.forEach(id => {
-    const { layer, parent } = findLayerById(id, project.html);
-
-    if (layer) {
-      const clonedLayer = cloneLayerObject(layer);
-
-      if (parent && Array.isArray(parent.children)) {
-        // Find the original layer index by comparing the IDs instead of the objects
-        const index = parent.children.findIndex(child => child.id === layer.id);
-        if (index !== -1) {
-          parent.children.splice(index + 1, 0, clonedLayer);
-        } else {
-          console.error("Selected layer not found in parent's children:", layer);
+  let modalContent = `<div>
+    <input 
+      id="b40h7qc6d"
+      type="number" 
+      min="1" 
+      step="1" 
+      value="${data.increment}"
+      oninput="data.increment = this.value;"
+      focus="true"
+      onkeydown="
+        if (event.key === 'Enter') {
+          document.querySelector('dialog[open]').querySelector('footer > button:last-child').onclick();
         }
-      } else if (!parent) {
-        // Find index in the root layer structure
-        const index = project.html.findIndex(rootLayer => rootLayer.id === layer.id);
-        if (index !== -1) {
-          project.html.splice(index + 1, 0, clonedLayer);
-        } else {
-          console.error('Selected layer not found in root layer structure:', layer);
-        }
+      "
+    />
+  </div>`;
+
+  Modal.render({
+    title: `How many times do you want to clone this block?`,
+    content: modalContent,
+    onLoad() {
+      document.getElementById('b40h7qc6d').focus();
+      document.getElementById('b40h7qc6d').select();
+    },
+    onConfirm() {
+      saveState(); // Save state before making changes
+
+      const cloneCount = parseInt(data.increment, 10);
+      
+      if (isNaN(cloneCount) || cloneCount <= 0) {
+        console.error('Invalid clone count:', cloneCount);
+        return;
       }
-    } else {
-      console.error('Layer not found for ID:', id);
+
+      data.selectedLayerIds.forEach(id => {
+        const { layer, parent } = findLayerById(id, project.html);
+    
+        if (layer) {
+          for (let i = 0; i < cloneCount; i++) {
+            const clonedLayer = cloneLayerObject(layer);
+    
+            if (parent && Array.isArray(parent.children)) {
+              const index = parent.children.findIndex(child => child.id === layer.id);
+              if (index !== -1) {
+                parent.children.splice(index + 1, 0, clonedLayer);
+              } else {
+                console.error("Selected layer not found in parent's children:", layer);
+              }
+            } else if (!parent) {
+              const index = project.html.findIndex(rootLayer => rootLayer.id === layer.id);
+              if (index !== -1) {
+                project.html.splice(index + 1, 0, clonedLayer);
+              } else {
+                console.error('Selected layer not found in root layer structure:', layer);
+              }
+            }
+          }
+        } else {
+          console.error('Layer not found for ID:', id);
+        }
+      });
+    
+      clearAllSelections(); // Clear selection after cloning
+      saveState(); // Save state after making changes
     }
   });
-
-  clearAllSelections(); // Clear selection after cloning
-  saveState(); // Save state after making changes
 }
-window.cloneLayerObject = (layer) => {
+
+window.cloneLayerObject = layer => {
   const clonedLayer = JSON.parse(JSON.stringify(layer)); // Deep clone
   clonedLayer.id = generateId(); // Assign a new ID
 
