@@ -3252,7 +3252,7 @@ window.Modal = {
     }
   }
 }
-function Blocks() {
+window.Blocks = () => {
   const btnClass = `bg-transparent p-4 text-xs cursor-pointer capitalize`;
 
   let blockItem = '', componentItem = '';
