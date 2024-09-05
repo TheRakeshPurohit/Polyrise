@@ -5614,6 +5614,7 @@ window.customCode = () => {
         code = minifyCSS(code);
         const newJSON = css2json(code);
         mergeCSSJSON(project.css, newJSON);
+        document.querySelector('dialog[open]').querySelector('header > button').onclick();
       }
     }
   });
