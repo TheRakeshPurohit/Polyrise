@@ -5731,7 +5731,15 @@ window.executeQuery = (queriesString, replaceSelection = true) => {
       case 'e':
         emptyChildren(); // Empty all children from selections
         break;
-      default:
+      case 'cas':
+        project.css = {
+          "rootVariables": {},
+          "styles": {},
+          "animations": {},
+          "breakpoints": {}
+        };
+        break;
+        default:
         console.warn('Unknown command:', command);
     }
   }
@@ -7058,7 +7066,7 @@ window.commandPalette = () => {
     "hide all": "h",
     "show all": "s",
     "empty children": "e",
-    "clear all selections": ""
+    "clear all styles": "cas"
   };
 
   // Generate buttons HTML from the commands object
@@ -7126,6 +7134,7 @@ window.commandPalette = () => {
       <li><code>u</code> - Uncollapse all layers.</li>
       <li><code>h</code> - Hide all layers.</li>
       <li><code>s</code> - Show all layers.</li>
+      <li><code>cas</code> - Clear all styles.</li>
       <li><code>e</code> - Empty all children from selections.</li>
     </ul>
     If no query is provided and you click "Confirm", all current selections will be cleared automatically. (You can also do this using the shortcut <code>Shift+Ctrl+A</code> on Windows or <code>Shift+Cmd+A</code> on Mac)<br/><br/>
