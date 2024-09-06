@@ -1,4 +1,5 @@
 @import url('../libraries/pico/pico.classless.min.css');
+@import url('../libraries/pickr/themes/nano.min.css');
 
 /* @tailwind base; */
 @tailwind components;

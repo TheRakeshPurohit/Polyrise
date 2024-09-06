@@ -88,6 +88,7 @@ window.generateId = () => {
   return id;
 }
 let d = {
+  doNotRender: null,
   shiftKey: null,
   cmdKey: null,
   iframeSize: null,
@@ -2246,7 +2247,7 @@ function Inspector() {
     let styles = '';
 
     // Regular expression to detect color values
-    const colorRegex = /^(#[0-9a-f]{3,6}|rgba?(.+)|hsla?(.+))$/i;
+    const colorRegex = /^(#[0-9a-f]{3,6}|rgb?(.+)|hsl?(.+)|hsv?(.+))$/i;
     
     // List of properties that should use a textarea
     const complexProperties = [
@@ -2353,7 +2354,7 @@ function Inspector() {
               styles += `
                   <input class="${inputClass}" style="${inputStyle}" 
                       type="text" value="${value}" 
-                      oninput="${selector} = this.value; saveState();">
+                      oninput="${selector} = this.value;" onfocus="saveState()" onblur="saveState()">
               `;
           }
       
@@ -2370,29 +2371,31 @@ function Inspector() {
                     ${prop}
                 </button>
                 <textarea class="${textareaClass}" style="${textareaStyle}"
-                    oninput="${selector} = this.value; saveState();">${value}</textarea>`;
+                    oninput="${selector} = this.value;" onfocus="saveState()" onblur="saveState()">${value}</textarea>`;
         } else {
             // Check if the property is a color property
             const isColorProperty = colorRegex.test(value) || value === null;
-            const inputType = isColorProperty ? 'color' : 'text';
             const fallbackColor = isColorProperty && value === null ? '#000000' : value;
-
-            // Update the style if the input type is color
-            const updatedInputStyle = inputType === 'color' 
-                ? `${inputStyle} height: 2rem; margin: 0; padding: .25rem; overflow: hidden;` 
-                : inputStyle;
 
             styles += `
                 <button 
-                    class="${buttonItemClass.split('capitalize').join('')}" 
-                    style="color: unset;" 
-                    onclick="
-                        styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
+                  class="${buttonItemClass.split('capitalize').join('')}" 
+                  style="color: unset;" 
+                  onclick="
+                    styleModal('${key}', '${prop}', '${value}'${detect ? `, '${detect}'` : ''});
                 ">
                     ${prop}
                 </button>
-                <input class="${inputClass}" style="${updatedInputStyle}" type="${inputType}" value="${fallbackColor}" 
-                    oninput="${selector} = this.value; saveState();">`;
+                <input 
+                  class="${inputClass}" 
+                  style="${inputStyle}" 
+                  type="text" 
+                  value="${fallbackColor}" 
+                  ${isColorProperty ? `data-iscolor="${value}"` : ''}
+                  oninput="${selector} = this.value;" 
+                  onfocus="saveState()" 
+                  onblur="saveState()"
+                />`;
         }
     });
 
@@ -2403,7 +2406,7 @@ function Inspector() {
     let styles = '';
     
     // Regular expression to detect color values
-    const colorRegex = /^(#[0-9a-f]{3,6}|rgba?(.+)|hsla?(.+))$/i;
+    const colorRegex = /^(#[0-9a-f]{3,6}|rgb?(.+)|hsl?(.+)|hsv?(.+))$/i;
 
     // Iterate over each root variable
     Object.keys(project.css.rootVariables).forEach(key => {
@@ -2412,18 +2415,12 @@ function Inspector() {
 
       // Determine input type based on value
       const isColor = colorRegex.test(value);
-      const hasAlpha = value.includes('rgba') || value.includes('hsla');
       const isNumeric = !isNaN(parseFloat(value)) && isFinite(value);
 
       let inputType = 'text';
       let inputStyle = 'height: auto; margin: 0; padding: .4rem;';
 
-      if (isNumeric) {
-        inputType = 'number';
-      } else if (isColor && !hasAlpha) {
-        inputType = 'color';
-        inputStyle = 'height: 2rem; margin: 0; padding: .25rem; overflow: hidden;';
-      }
+      if (isNumeric) inputType = 'number';
 
       // Use processStyles function to generate styles for root variables
       styles += `
@@ -2437,7 +2434,8 @@ function Inspector() {
           class="${inputClass}"
           style="${inputStyle}" 
           type="${inputType}" 
-          value="${value}" 
+          value="${value}"
+          ${isColor ? `data-iscolor="${value}"` : ''}
           oninput="${selector} = this.value;" 
           onfocus="saveState()" 
           onblur="saveState()"
@@ -3559,6 +3557,7 @@ window.Blocks = () => {
 window.App = {
   initialRender: true,
   render(container) {
+    if (data.doNotRender) return;
     const buttonClass = "border-0 bg-transparent py-1";
     // Calculate zoom transform based on viewport size and iframe size
     const size = data.selectedSize;
@@ -3778,10 +3777,72 @@ window.App = {
       return false;
     }
 
+    const oldPickers = document.querySelectorAll('.pcr-app');
+    if (oldPickers) oldPickers.forEach(picker => picker.remove());
+
     // Compare and update only the changed parts
     const currentDoc = element.firstElementChild;
     const newDoc = doc.body.firstElementChild;
     diffNodes(currentDoc, newDoc);
+
+    // Select all elements with the data-color-picker attribute
+    const pickers = document.querySelectorAll('[data-iscolor]');
+
+    if (pickers) {
+      pickers.forEach((picker, index) => {
+        // Extract the initial color value from the data-iscolor attribute
+        const initialColor = picker.getAttribute('data-iscolor');
+        
+        const pickr = Pickr.create({
+          el: picker,
+          theme: 'nano', // or 'monolith', or 'nano'
+          default: initialColor,
+          inline: true,
+          components: {
+            // Main components
+            preview: true,
+            opacity: true,
+            hue: true,
+  
+            // Input / output Options
+            interaction: {
+              input: true
+            }
+          }
+        });
+
+        // Set the initial color
+        pickr.setColor(initialColor);
+  
+        // Update color display and state on color change
+        pickr.on('show', () => {
+          data.doNotRender = true;
+        })
+        .on('change', color => {
+          const colorString = color.toHEXA().toString();
+          
+          // Get the oninput attribute value
+          const onInputCode = pickers[index].getAttribute('oninput');
+        
+          if (onInputCode) {
+            // Replace 'this.value' with the actual color string
+            const updatedCode = onInputCode.replace(/this.value/g, `"${colorString}"`);
+        
+            // Create a new function using the Function constructor and execute it
+            const func = new Function(updatedCode);
+            func(); // Execute the dynamically created function
+          }
+        
+          // Apply color
+          pickr.applyColor();
+        })
+        .on('hide', () => {
+          data.doNotRender = null;
+          pickr.applyColor();
+          App.render('#app');
+        })
+      });
+    }
   }
 }
 
@@ -7726,6 +7787,40 @@ window.emptyStorage = () => {
     }
   });
 }
+window.clearAllStorage = () => {
+  // Clear local storage
+  localStorage.clear();
+
+  // Clear session storage
+  sessionStorage.clear();
+
+  // Clear all cookies
+  document.cookie.split(";").forEach(function(cookie) {
+    const cookieName = cookie.split("=")[0].trim();
+    document.cookie = cookieName + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+  });
+
+  // Clear all service workers
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+      registrations.forEach(function(registration) {
+        registration.unregister();
+      });
+    });
+  }
+
+  // Clear all caches
+  if ('caches' in window) {
+    caches.keys().then(function(names) {
+      names.forEach(function(name) {
+        caches.delete(name);
+      });
+    });
+  }
+
+  // Reload the page
+  location.reload();
+}
 window.importProject = () => {
   Modal.render({
     title: "Are you sure you want to load a new project?",
@@ -8935,9 +9030,8 @@ window.diffNodes = (oldNode, newNode) => {
     return;
   }
 
-  // Check for data-ignore attribute
-  if (oldNode.hasAttribute && oldNode.hasAttribute('data-ignore') || 
-      newNode.hasAttribute && newNode.hasAttribute('data-ignore')) {
+  // Skip nodes that are marked with `data-ignore-diff`
+  if (oldNode?.getAttribute && oldNode.hasAttribute('data-ignore-diff')) {
     return;
   }
 
