@@ -118,6 +118,177 @@ let d = {
   canUseQuickCommands: null,
   cssQuickCommands: {},
   increment: 1,
+  chosenFramework: '',
+  frameworks: {
+    'alpine.js': {
+      libraries: [
+        "https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"
+      ],
+      meta: ''
+    },
+    'bootstrap 5': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"
+      ],
+      meta: ''
+    },
+    'bulma': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css"
+      ],
+      meta: ''
+    },
+    'foundation': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/foundation/6.6.3/css/foundation.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/foundation/6.6.3/js/foundation.min.js"
+      ],
+      meta: ''
+    },
+    'materialize': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"
+      ],
+      meta: ''
+    },
+    'pico.css': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/picocss/2.0.6/pico.min.css",
+        "https://michaelsboost.com/TailwindCSSMod/tailwind-mod-noreset.min.js"
+      ],
+      meta: ''
+    },
+    'semantic': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.2/semantic.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.2/semantic.min.js"
+      ],
+      meta: ''
+    },
+    'tailwind': {
+      libraries: [
+        "https://michaelsboost.com/TailwindCSSMod/tailwind-mod-noreset.min.js"
+      ],
+      meta: ''
+    },
+    'uikit': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.17.2/css/uikit.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.17.2/js/uikit.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.17.2/js/uikit-icons.min.js"
+      ],
+      meta: ''
+    },
+    'pure.css': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/pure/2.0.6/pure-min.css"
+      ],
+      meta: ''
+    },
+    'skeleton': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css"
+      ],
+      meta: ''
+    },
+    'bulma-extensions': {
+      libraries: [
+        "https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/css/bulma-extensions.min.css",
+        "https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/js/bulma-extensions.min.js"
+      ],
+      meta: ''
+    },
+    'tachyons': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/tachyons/4.12.0/tachyons.min.css"
+      ],
+      meta: ''
+    },
+    'water.css': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/water.css/2.1.1/water.min.css"
+      ],
+      meta: ''
+    },
+    'spectre.css': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/spectre.css/0.5.9/spectre.min.css"
+      ],
+      meta: ''
+    },
+    'milligram': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css"
+      ],
+      meta: ''
+    },
+    'chakra-ui': {
+      libraries: [
+        "https://cdn.jsdelivr.net/npm/@chakra-ui/react@2.0.0/dist/chakra-ui.min.css"
+      ],
+      meta: ''
+    },
+    'gsap': {
+      libraries: [
+        "https://unpkg.com/gsap@3/dist/gsap.min.js"
+      ],
+      meta: ''
+    },
+    'animate.css': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+      ],
+      meta: ''
+    },
+    'locomotive-scroll': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/locomotive-scroll/4.1.4/locomotive-scroll.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/locomotive-scroll/4.1.4/locomotive-scroll.min.js"
+      ],
+      meta: ''
+    },
+    'fullpage.js': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.11/fullpage.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.11/fullpage.min.js"
+      ],
+      meta: ''
+    },
+    'aos': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"
+      ],
+      meta: ''
+    },
+    'swiper': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/Swiper/9.1.2/swiper-bundle.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/Swiper/9.1.2/swiper-bundle.min.js"
+      ],
+      meta: ''
+    },
+    'barba.js': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/barba.js/2.9.7/barba.min.js"
+      ],
+      meta: ''
+    },
+    'three.js': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/three.js/r148/three.min.js"
+      ],
+      meta: ''
+    },
+    'vivus': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/vivus/0.4.6/vivus.min.js"
+      ],
+      meta: ''
+    }
+  },
   defaultValues: {
     "animation": "none",
     "animation-delay": "0s",
@@ -1155,6 +1326,16 @@ function Menu() {
     return menuDialog;
 }
 function Settings() {
+  let frameworks = data.frameworks;
+
+  // Get the keys, sort them alphabetically, and reduce them back into an object
+  let sortedFrameworks = Object.keys(frameworks)
+    .sort()
+    .reduce((acc, key) => {
+      acc[key] = frameworks[key];
+      return acc;
+    }, {});
+
   let settingsHTML = `<ul class="px-0">
     <li class="list-none">
       <div class="mb-2">
@@ -1252,6 +1433,29 @@ function Settings() {
           ${icons.search}
         </button>
       </nav>
+
+      <select onchange="
+        if (this.value) {
+          data.chosenFramework = this.value.toLowerCase();
+          let framework = data.frameworks[\`\${data.chosenFramework}\`];
+          if (!project.libraries.includes(framework.libraries)) {
+            for (item of framework.libraries) {
+              project.libraries.push(item);
+            }
+          }
+          if (framework.meta) project.meta += framework.meta;
+        } else {
+          data.chosenFramework = '';
+        }
+      ">
+        <option value="" ${!data.chosenFramework ? 'selected' : ''}>-- Popular Libraries/Frameworks --</option>
+        ${Object.keys(sortedFrameworks).map(framework => {
+          // Lowercase except first character is uppercase
+          let name = framework.toLowerCase();
+          name = name.charAt(0).toUpperCase() + name.slice(1);
+          return `<option value="${name}" ${name === data.chosenFramework ? 'selected' : ''}>${name}</option>`
+        }).join('')}
+      </select>
 
       <div id="librariesBox">
         ${project.libraries.map((library, index) => `
@@ -1426,7 +1630,7 @@ function Settings() {
           class="text-xs w-auto px-3 py-2 m-0 capitalize rounded-md bg-transparent border-0" 
           style="color: unset;" 
           aria-label="Close"
-          onclick="data.settings = null">
+          onclick="data.settings = null; data.chosenFramework = '';">
           ${icons.times}
         </button>
       </header>
@@ -1438,7 +1642,7 @@ function Settings() {
           class="text-xs w-auto px-3 py-2 m-0 capitalize rounded-md bg-transparent border ${project.dark ? 'border-gray-600' : 'border-gray-200'}" 
           style="color: unset;" 
           aria-label="Close" 
-          onclick="data.settings = null">
+          onclick="data.settings = null; data.chosenFramework = '';">
           close
         </button>
       </footer>
@@ -3289,12 +3493,21 @@ window.Blocks = () => {
       </div>`;
   });
 
-  let modalContent = `<article class="select-none font-thin">
-        <section class="p-0 m-0">
-          <details class="flex items-center mb-0" ${data.blocks.visible ? 'open' : ''} ontoggle="
-            const detailsElement = this;
-            data.blocks.visible = detailsElement.hasAttribute('open');
-          ">
+  let modalContent = `<nav class="select-none items-center" style="padding: var(--pico-block-spacing-vertical) var(--pico-block-spacing-horizontal); margin: var(--pico-spacing);">
+    <label for='j44mb4rqj' class="font-thin cursor-pointer">${data.blockWrap ? "Blocks will be parent's of selected layers." : "Blocks are added as children"}</label>
+    <input id='j44mb4rqj' type="checkbox" role="switch" ${data.blockWrap ? 'checked="true" ' : ''}onchange="
+      data.blockWrap = !data.blockWrap;
+      let result = data.blockWrap ? \`Blocks will be parent's of selected layers.\` : \`Blocks are added as children\`;
+      this.previousElementSibling.textContent = result;
+    ">
+  </nav>
+  
+    <section class="select-none font-thin" style="padding: var(--pico-block-spacing-vertical) var(--pico-block-spacing-horizontal); margin: var(--pico-spacing);">
+      <div class="p-0 m-0">
+        <details class="flex items-center mb-0" ${data.blocks.visible ? 'open' : ''} ontoggle="
+          const detailsElement = this;
+          data.blocks.visible = detailsElement.hasAttribute('open');
+        ">
           <summary>
             ${data.blocks.name}
           </summary>
@@ -3310,32 +3523,32 @@ window.Blocks = () => {
             </button>
           </code>
         </details>
-      </section>
-    </article>
+      </div>
+    </section>
     
-    <article class="select-none font-thin">
-        <section class="p-0 m-0">
-          <details class="flex items-center mb-0" ${data.componentsVisible ? 'open' : ''} ontoggle="
-            const detailsElement = this;
-            data.blocks.visible = detailsElement.hasAttribute('open');
-          ">
-          <summary>
-            Components
-          </summary>
-          <code class="grid grid-cols-2 gap-2 mb-0 bg-transparent">
-            ${componentItem}
+    <section class="select-none font-thin" style="padding: var(--pico-block-spacing-vertical) var(--pico-block-spacing-horizontal); margin: var(--pico-spacing);">
+      <div class="p-0 m-0">
+        <details class="flex items-center mb-0" ${data.componentsVisible ? 'open' : ''} ontoggle="
+          const detailsElement = this;
+          data.blocks.visible = detailsElement.hasAttribute('open');
+        ">
+        <summary>
+          Components
+        </summary>
+        <code class="grid grid-cols-2 gap-2 mb-0 bg-transparent">
+          ${componentItem}
 
-            <button 
-              class="${btnClass} ${project.dark ? "border-gray-800" : "border-gray-200"}"
-              style="color: unset;"
-              onclick="addComponent()"
-            >
-              ${icons.plus}
-            </button>
-          </code>
-        </details>
-      </section>
-    </article>`;
+          <button 
+            class="${btnClass} ${project.dark ? "border-gray-800" : "border-gray-200"}"
+            style="color: unset;"
+            onclick="addComponent()"
+          >
+            ${icons.plus}
+          </button>
+        </code>
+      </details>
+    </div>
+  </section>`;
 
   // Render the modal
   Modal.render({
@@ -3648,10 +3861,9 @@ window.modifyRootVariable = id => {
         let newName = name.substring(0, 2) + name.charAt(2).toLowerCase() + name.slice(3);
         
         if (project.css.rootVariables[newName]) {
-          Modal.render({
-            title: `Unable to rename variable!`,
-            content: "Variable name already exists!"
-          });
+          // Update existsing value
+          project.css.rootVariables[newName] = newValue;
+          App.render('#app');
         } else {
           saveState();
 
@@ -6301,24 +6513,51 @@ window.addBlock = html => {
 
   // Process the input HTML or object
   const newBlocks = processHtmlOrObject(html);
-  
+
   if (data.selectedLayerIds.length > 0) {
-    // If user has multiple layers selected
     data.selectedLayerIds.forEach(id => {
       const result = findLayerById(id, project.html);
       if (result) {
-        const { layer } = result;
+        const { layer, parent } = result;
+
+        // Set the selected state to false and remove the ID from selectedLayerIds
+        layer.selected = false;
+        data.selectedLayerIds = data.selectedLayerIds.filter(layerId => layerId !== id);
 
         if (canAcceptChildren(layer)) {
-          // Ensure `layer.children` is initialized
-          layer.children = layer.children || [];
+          if (data.blockWrap) {
+            // Ensure the new block can hold children
+            const parentBlock = newBlocks[0];
+            if (canAcceptChildren(parentBlock)) {
+              // Ensure `parentBlock.children` is initialized
+              parentBlock.children = parentBlock.children || [];
+              parentBlock.children.push(layer); // Make the selected layer a child of the new block
 
-          // Assign IDs and then push new blocks
-          assignIds(newBlocks, () => {
-            newBlocks.forEach(newBlock => {
-              layer.children.push(newBlock); // Push new block after ID assignment
+              // Assign IDs to the new parent block and its children
+              assignIds(newBlocks, () => {
+                // Push the new parent block to the original parent's children
+                if (parent && parent.children) {
+                  parent.children = parent.children.map(child =>
+                    child.id === layer.id ? parentBlock : child
+                  );
+                } else {
+                  project.html = project.html.map(child =>
+                    child.id === layer.id ? parentBlock : child
+                  );
+                }
+              });
+            }
+          } else {
+            // Ensure `layer.children` is initialized
+            layer.children = layer.children || [];
+
+            // Assign IDs and then push new blocks
+            assignIds(newBlocks, () => {
+              newBlocks.forEach(newBlock => {
+                layer.children.push(newBlock); // Push new block after ID assignment
+              });
             });
-          });
+          }
         }
       }
     });
@@ -6333,6 +6572,7 @@ window.addBlock = html => {
   saveState(); // Save state after making changes
   document.querySelector('dialog[open]').querySelector('header > button').onclick();
 };
+
 
 window.selectLayersByStyleRef = (style, layers) => {
   for (const layer of layers) {
