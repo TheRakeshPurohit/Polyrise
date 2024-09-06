@@ -2284,10 +2284,7 @@ function Inspector() {
           // Ensure valueParts and remainingParts are arrays, even if value is null or doesn't match
           const valueParts = value ? value.match(/-?\d*\.?\d+([a-z%]+|)/g) || [] : [];
           const remainingParts = value ? value.split(/-?\d*\.?\d+[a-z%]*/g).filter(Boolean) || [] : [];
-      
-          // Determine the appropriate grid column class based on the presence of value parts
-          const gridColsClass = valueParts.length > 0 ? 'grid-cols-2' : 'grid-cols-1';
-      
+
           styles += `
               <button 
                   class="${buttonItemClass.split('capitalize').join('')}" 
@@ -2297,12 +2294,15 @@ function Inspector() {
               ">
                   ${prop}
               </button>
-              <div class="grid ${gridColsClass} gap-1 items-center capitalize">`;
+              <div class="grid gap-1 items-center capitalize">`;
       
           valueParts.forEach((part, index) => {
               const numericValue = parseFloat(part);
               const unitMatch = part.match(/[a-zA-Z%]+/);
               const unit = unitMatch ? unitMatch[0] : '';
+
+              // Check if the current part contains `var()`
+              const gridColsClass = part.includes('var(') ? 'grid-cols-1' : 'grid-cols-2';
       
               // Define valid units based on property
               let validUnits;
@@ -2319,9 +2319,12 @@ function Inspector() {
                       validUnits = ['', 'ms', 's']; // Example units for duration properties
                       break;
                   default:
-                      validUnits = ['', 'px', '%', 'rem', 'em', 'vh', 'lvh', 'svh', 'dvh', 'vw', 'lvw', 'svw', 'dvw']; // Default units
+                      validUnits = ['', 'px', '%', 'rem', 'em', 'vh', 'lvh', 'svh', 'dvh', 'vw', 'lvw', 'svw', 'dvw', 'ex', 'ch', 'vmin', 'vmax', 'cm', 'mm', 'in', 'pt', 'pc']; // Default units
                       break;
               }
+
+              // Add a grid class per input field
+              styles += `<div class="grid ${gridColsClass} gap-1">`;
       
               const selectElement = `<select class="${selectClass}" style="${selectStyle}" onchange="
                   const valueParts = ${selectorPrefix}['${prop}'].split(' ');
@@ -2346,7 +2349,8 @@ function Inspector() {
                       valueParts[${index}] = this.value + '${unit}';
                       ${selector} = valueParts.join(' ')${remainingParts.length > 0 ? ` + ' ' + '${remainingParts.join(' ')}'` : ''};"
                       onfocus="saveState();" onblur="saveState();">
-                  ${prop === 'opacity' || prop === 'z-index' ? rangeElement : selectElement}`;
+                  ${prop === 'opacity' || prop === 'z-index' ? rangeElement : selectElement}
+                </div>`;
           });
       
           // Add a backup text input for cases where units aren't defined
@@ -2583,6 +2587,7 @@ function Inspector() {
     let styles = '';
     let selector = '';
     let activeStyle = null;
+    let buttonClass = '';
     if (commonLayerTag) {
       Object.keys(commonLayerTag).forEach(layerKey => {
         const layer = commonLayerTag[layerKey];
@@ -2854,6 +2859,7 @@ function Inspector() {
     if (!commonLayerTag) data.stylesTarget = null;
     let styles = '';
     let activeStyle = null;
+    let buttonClass = '';
     if (commonLayerTag) {
       Object.keys(commonLayerTag).forEach(layerKey => {
         const layer = commonLayerTag[layerKey];
@@ -3134,7 +3140,7 @@ function Inspector() {
           let name = propKey;
           const value = commonAttributes[propKey];
   
-          textAreaAttributes = ["on", '@', "x-", ":"];
+          const textAreaAttributes = ["on", '@', "x-", ":"];
           const lowerPropKey = propKey.toLowerCase();
   
           // Handle different types of attributes
