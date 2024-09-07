@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
-    <title>Polyrise</title>
+    <title>Polyrise: Design with Freedom, Build with Power!</title>
     <meta charset="utf-8">
     <meta name="description" content="Free Mobile Website Builder! Design with Freedom, Build with Power. Free for personal and commercial use.">
     <meta name="author" content="Michael Schwartz">
@@ -23,33 +23,113 @@
     <link rel="shortcut icon" type="image/x-icon" href="imgs/logo.svg">
     <link rel="icon" type="image/svg+xml" href="imgs/logo.svg">
     <link rel="apple-touch-icon" href="imgs/logo.svg">
-    <!-- <link rel="stylesheet" href="libraries/pico/pico.classless.css">
-    <script src="libraries/tailwind/tailwind-mod-noreset.min.js"></script>
-    <script src="libraries/font-awesome/js/all.min.js"></script> -->
-    <style>.pickr *,.pcr-app *{all:unset;}.pcr-app input:not([type=checkbox]){width:unset;}.pcr-app[data-theme='nano']{display:none;width:100%;max-width:100%;}.pcr-app.visible{display:block;}</style>
-    <link rel="stylesheet" href="dist/style.css">
-    <style>.pickr>.pcr-button{width:100%;}</style>
+    <link rel="stylesheet" href="dist/bundle.css">
   </head>
   <body>
-    <header class="absolute inset-0 text-center grid grid-cols-1 items-center">
-      <hgroup>
-        <h1 class="mb-2 text-[#ffffff00]">Polyrise</h1>
-        <h2 class="text-[#ffffff00]">Design with Freedom, Build with Power. Free for personal and commercial use.</h2>
-      </hgroup>
-    </header>
+    <div id="home" class="container">
+      <nav class="md:sticky md:top-0 md:inset-x-0 flex-col md:flex-row items-center py-4 bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg">
+        <ul class="flex flex-col md:flex-row items-center gap-0 md:gap-3">
+          <!-- Logo -->
+          <li>
+            <a href="#home" class="text-2xl font-bold">
+              <img src="imgs/logo.svg" alt="Polyrise Logo" class="h-8">
+            </a>
+          </li>
+        </ul>
+          
+          <!-- Links -->
+        <ul class="flex flex-col md:flex-row items-center gap-0 md:gap-3 text-xs md:text-base">
+          <li class="flex gap-3 py-2">
+            <div class="bg-[#cf06bc] rounded-md px-2 py-1 md:px-4 md:py-3">
+              <a class="no-underline text-white" href="#home">Home</a>
+            </div>
+            <div class="px-2 py-1 md:px-4 md:py-3">
+              <a class="no-underline" href="https://github.com/michaelsboost/Polyrise" target="_blank">Github</a>
+            </div>
+            <div class="px-2 py-1 md:px-4 md:py-3">
+              <a class="no-underline" href="https://twitter.com/michaelsboost" target="_blank">Twitter</a>
+            </div>
+            <div class="px-2 py-1 md:px-4 md:py-3">
+              <a class="no-underline" href="https://michaelsboost.com/donate" target="_blank">Support</a>
+            </div>
+          </li>
+        </ul>
+          
+          <!-- Get Started Button -->
+        <ul class="flex flex-col md:flex-row items-center gap-0 md:gap-3">
+          <li>
+            <a href="/app" class="no-underline text-white bg-[#0d6efd] hover:bg-[#0b5ed7] active:bg-[#0a58ca] px-3 py-2 md:px-4 md:py-3 rounded-lg">
+              Get Started
+            </a>
+          </li>
+        </ul>
+      </nav>
     
-    <div id="app" class="absolute inset-0"></div>
+      <main class="flex flex-col items-center justify-center min-h-screen py-12">
+        <hgroup class="text-center mb-8">
+          <h1 class="text-4xl font-bold">
+            Design with Freedom, Build with Power
+          </h1>
+          <h2 class="text-lg mt-4">
+            Unleash your creativity with a flexible website builder for desktop and mobile. Free for personal and commercial use.
+          </h2>
+        </hgroup>
+        
+        <div class="mb-8">
+          <video class="w-full h-full object-cover object-center rounded-lg shadow-lg shadow-blue-900" autoplay="true" controls="false" preload="auto" poster="media/polyrise-desktop.webm" loop="true" poster="media/polyrise-desktop.webp" muted="true">
+            <source src="media/polyrise-desktop.mp4" type="video/mp4">
+            <source src="media/polyrise-desktop.webm" type="video/webm">
+            Your browser does not support the video tag.
+          </video>
 
-    <!-- <script src="src/concat.js" type="module"></script> -->
-    <script src="dist/App.min.js"></script>
-    <script src="https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-sw.js"></script>
-    <script>
-      // service worker for progressive web app
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
-        })
-      }
-    </script>
+          <!-- Fallback Image when Video Fails -->
+          <noscript>
+            <img src="media/polyrise-desktop.webp" alt="Polyrise desktop screenshot" class="w-full h-full object-cover object-center rounded-lg shadow-lg shadow-blue-900">
+          </noscript>
+        </div>
+      
+        <a href="/app" class="w-full text-center no-underline text-white bg-[#0d6efd] hover:bg-[#0b5ed7] active:bg-[#0a58ca] text-xl px-5 py-4 rounded-lg">
+          Get Started
+        </a>
+      </main>
+    
+      <article id="features">
+        <section class="container py-16">
+          <hgroup class="text-center mb-8">
+            <h1 class="text-4xl font-bold">
+              Why Polyrise?
+            </h1>
+            <h2 class="text-lg mt-4">
+              Discover how our tool empowers you to create, customize, and launch stunning websites with ease.
+            </h2>
+          </hgroup>
+          <div class="w-1/2 m-auto">
+            <hr>
+          </div>
+          <div class="grid md:grid-cols-2 gap-8 p-4">
+            <div class="text-center">
+              <img src="app/imgs/make-work-awesome.gif" alt="Bring Your Vision to Life" loading="lazy" class="mx-auto mb-4">
+              <h3 class="text-xl font-bold mb-2">Bring Your Vision to Life</h3>
+              <p>Design responsive websites with complete creative freedom. Customize every aspect of your project to fit your unique style.</p>
+            </div>
+            <div class="text-center">
+              <img src="app/imgs/button.gif" alt="Custom Components" loading="lazy" class="mx-auto mb-4">
+              <h3 class="text-xl font-bold mb-2">Custom Components</h3>
+              <p>Easily create and use custom components to build your unique designs, and speed up your workflow.</p>
+            </div>
+            <div class="text-center">
+              <img src="media/multiplatform.svg" alt="Mobile and Desktop" loading="lazy" class="mx-auto mb-4">
+              <h3 class="text-xl font-bold mb-2">Mobile and Desktop</h3>
+              <p>Experience the same creative freedom on both desktop and mobile devices.</p>
+            </div>
+            <div class="text-center">
+              <img class="mx-auto mb-4" src="media/github.svg" alt="Open Source and Free" loading="lazy">
+              <h3 class="text-xl font-bold mb-2">Open Source and Free</h3>
+              <p>Polyrise is completely free for personal and commercial use under the MIT license.</p>
+            </div>
+          </div>
+        </section>
+      </article>
+    </div>
   </body>
 </html>
