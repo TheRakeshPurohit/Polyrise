@@ -620,7 +620,7 @@
                       "name": "img",
                       "type": "img",
                       "props": {
-                        "src": "imgs/preview.png",
+                        "src": "https://michaelsboost.com/Polyrise/app/imgs/preview.png",
                         "class": "img-fluid border rounded-3 shadow-lg mb-4",
                         "alt": "Example image",
                         "width": "700",
@@ -777,7 +777,7 @@
                           "name": "img",
                           "type": "img",
                           "props": {
-                            "src": "imgs/make-work-awesome.gif",
+                            "src": "https://michaelsboost.com/Polyrise/app/imgs/make-work-awesome.gif",
                             "class": "card-img-top",
                             "alt": "Feature 1 in action"
                           }
@@ -882,7 +882,7 @@
                           "name": "img",
                           "type": "img",
                           "props": {
-                            "src": "imgs/button.gif",
+                            "src": "https://michaelsboost.com/Polyrise/app/imgs/button.gif",
                             "class": "card-img-top",
                             "alt": "Feature 1 in action"
                           }
@@ -987,7 +987,7 @@
                           "name": "img",
                           "type": "img",
                           "props": {
-                            "src": "imgs/screenshot-todo-app.jpeg",
+                            "src": "https://michaelsboost.com/Polyrise/app/imgs/screenshot-todo-app.jpeg",
                             "class": "card-img-top",
                             "alt": "Feature 2 in action"
                           }
@@ -1092,7 +1092,7 @@
                           "name": "img",
                           "type": "img",
                           "props": {
-                            "src": "imgs/responsive.gif",
+                            "src": "https://michaelsboost.com/Polyrise/app/imgs/responsive.gif",
                             "class": "card-img-top",
                             "alt": "Feature 3 in action"
                           }

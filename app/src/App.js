@@ -8942,6 +8942,10 @@ window.screenshot = async () => {
     removeScript("../libraries/jszip/FileSaver.min.js");
   }
 }
+window.createBlobURL = (content, type) => {
+  const blob = new Blob([content], { type });
+  return URL.createObjectURL(blob);
+}
 window.renderPreview = (forceRun = false) => {
   const iframe = document.getElementById('iframe');
   if (!iframe) return;
@@ -8995,6 +8999,7 @@ ${json2html(project.html)}
     </script>
   </body>
 </html>`;
+const newHtmlBlobURL = createBlobURL(iframeSrc, 'text/html');
 
   // Create a new temporary iframe to compare
   const parser = new DOMParser();
@@ -9002,7 +9007,7 @@ ${json2html(project.html)}
   const idoc = iframe.contentDocument || iframe.contentWindow.document;
 
   if (forceRun) {
-    iframe.setAttribute('srcdoc', iframeSrc);
+    iframe.setAttribute('src', newHtmlBlobURL);
   } else {
     diffNodes(idoc.documentElement, doc.documentElement);
   }
