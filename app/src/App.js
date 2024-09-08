@@ -52,7 +52,7 @@ let app = {
     href: 'https://michaelsboost.com/',
     src: 'imgs/author.jpg'
   },
-  version: '1.0.2',
+  version: '1.0.3',
   url: 'https://github.com/michaelsboost/Polyrise/',
   license: 'https://github.com/michaelsboost/Polyrise/blob/gh-pages/LICENSE'
 }
@@ -1027,7 +1027,7 @@ window.project = createProxy(p, (property, oldValue, newValue) => {
 
     if (!App.initialRender) {
       // List of properties that should not trigger App.render
-      const noRenderProps = ['lang', 'title', 'description', 'author', 'url', 'meta', 'previewDark'];
+      const noRenderProps = ['lang', 'title', 'description', 'author', 'url', 'meta'];
 
       // Check if the change is within project.html and is a text property
       if (propertyParts[0] === 'html' && propertyParts.includes('text')) {
@@ -7662,6 +7662,9 @@ window.importJSON = (obj, callback = null) => {
   project.url = obj.url;
   project.logo = obj.logo;
   project.dark = obj.dark;
+  project['previewDark'] = ('previewDark' in obj && typeof obj.previewDark === 'boolean') 
+    ? obj.previewDark 
+    : true;
   project.pwa = obj.pwa;
   project.activePanel = obj.activePanel;
   
