@@ -815,41 +815,11 @@ let d = {
       },
       {
         type: "style",
-        code: {
-          "tag": "style",
-          "id": `${generateId()}`,
-          "style": "",
-          "state": {
-            "collapsed": false,
-            "visible": true,
-            "selected": false
-          },
-          "name": "style",
-          "type": "style",
-          "text": "",
-          "props": {
-            "type": "text/css"
-          }
-        }
+        code: '<style type="text/css"></style>'
       },
       {
         type: "script",
-        code: {
-          "tag": "script",
-          "id": `${generateId()}`,
-          "style": "",
-          "state": {
-            "collapsed": false,
-            "visible": true,
-            "selected": false
-          },
-          "name": "script",
-          "type": "script",
-          "text": "",
-          "props": {
-            "type": "module"
-          }
-        }
+        code: '<script type="module"></script>'
       },
       {
         type: "hr",
@@ -1028,6 +998,12 @@ window.project = createProxy(p, (property, oldValue, newValue) => {
     if (!App.initialRender) {
       // List of properties that should not trigger App.render
       const noRenderProps = ['lang', 'title', 'description', 'author', 'url', 'meta'];
+
+      // Skip renderPreview if property is state.selected
+      if (propertyParts.includes('state') && ['selected', 'collapsed'].some(part => propertyParts.includes(part))) {
+        App.render('#app');
+        return; // Exit the function early
+      }      
 
       // Check if the change is within project.html and is a text property
       if (propertyParts[0] === 'html' && propertyParts.includes('text')) {
@@ -5149,8 +5125,13 @@ window.html2json = input => {
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(input, 'text/html');
-  const json = Array.from(doc.body.children).map(child => elementToJson(child));
-  return json;
+
+  // Process both head and body elements
+  const headJson = Array.from(doc.head.children).map(child => elementToJson(child));
+  const bodyJson = Array.from(doc.body.children).map(child => elementToJson(child));
+
+  // Combine the head and body JSON structures into one array
+  return [...headJson, ...bodyJson];
 }
 window.json2html = input => {
   function jsonToElement(json) {
@@ -6565,21 +6546,8 @@ window.addBlock = html => {
     }
   };
 
-  // Function to handle processing of HTML string or object
-  const processHtmlOrObject = html => {
-    if (typeof html === 'string') {
-      return html2json(html); // Convert HTML string to JSON
-    } else if (typeof html === 'object') {
-      // Assume it's already a block object or an array of block objects
-      return Array.isArray(html) ? html : [html];
-    } else {
-      console.error('Invalid HTML input. Expected a string or an object.');
-      return [];
-    }
-  };
-
   // Process the input HTML or object
-  const newBlocks = processHtmlOrObject(html);
+  const newBlocks = html2json(html);
 
   if (data.selectedLayerIds.length > 0) {
     data.selectedLayerIds.forEach(id => {
