@@ -52,7 +52,7 @@ let app = {
     href: 'https://michaelsboost.com/',
     src: 'imgs/author.jpg'
   },
-  version: '1.0.3',
+  version: '1.0.4',
   url: 'https://github.com/michaelsboost/Polyrise/',
   license: 'https://github.com/michaelsboost/Polyrise/blob/gh-pages/LICENSE'
 }
@@ -990,11 +990,6 @@ window.project = createProxy(p, (property, oldValue, newValue) => {
     // Split the property path into components
     const propertyParts = property.split('.');
 
-    // Check for specific property changes
-    if (propertyParts[0] === 'activePanel') {
-      getIFrameClientSize();
-    }
-
     if (!App.initialRender) {
       // List of properties that should not trigger App.render
       const noRenderProps = ['lang', 'title', 'description', 'author', 'url', 'meta'];
@@ -1030,6 +1025,10 @@ window.project = createProxy(p, (property, oldValue, newValue) => {
           document.querySelector('meta[name=msapplication-navbutton-color]').setAttribute('content', project.dark ? '#13171f' : '#ffffff');
         }
       }
+
+      if (propertyParts[0] === 'activePanel') getIFrameClientSize();
+    } else {
+      if (propertyParts[0] === 'activePanel') getIFrameClientSize();
     }
   }
 });
@@ -3695,7 +3694,7 @@ window.App = {
 
                     <span 
                       id="iframeClientSize" 
-                      class="hidden opacity-0 transition-opacity duration-300 absolute top-0 right-0 ${project.dark ? 'bg-gray-800' : 'bg-gray-200'} p-1 text-xs">
+                      class="opacity-100 transition-opacity duration-300 absolute top-0 right-0 ${project.dark ? 'bg-gray-800' : 'bg-gray-200'} p-1 text-xs">
                         ${data.iframeSize}
                     </span>
                   </div>
@@ -7531,6 +7530,19 @@ window.updateVersionPart = (part, value) => {
   }
   project.version = versionParts.join('.');
 }
+window.createLayerMap = (layers, map = new Map()) => {
+  layers.forEach(layer => {
+    // Add the layer to the map
+    map.set(layer.id, layer);
+
+    // If the layer has children, recursively add them to the map
+    if (layer.children && layer.children.length > 0) {
+      createLayerMap(layer.children, map);
+    }
+  });
+
+  return map;
+}
 
 // iframe functions
 window.resizeCanvas = size => {
@@ -7560,8 +7572,8 @@ window.getIFrameClientSize = () => {
     let height = parseInt(iframe.style.height);
   
     // Calculate the new transform scale
-    const viewportWidth = previewElm.clientWidth;
-    const viewportHeight = previewElm.clientHeight;
+    const viewportWidth = previewElm.offsetWidth;
+    const viewportHeight = previewElm.offsetHeight;
     const scale = Math.min(viewportWidth / width, viewportHeight / height);
   
     // Apply the new styles
@@ -7572,10 +7584,10 @@ window.getIFrameClientSize = () => {
     iframe.style.marginLeft = `-${width / 2}px`;
   }
 
-  data.iframeSize = `${iframe.clientWidth}px x ${iframe.clientHeight}px`;
+  data.iframeSize = `${iframe.offsetWidth}px x ${iframe.offsetHeight}px`;
   const element = document.getElementById('iframeClientSize');
 
-  if (element.classList.contains('hidden')) {
+  if (element.classList.contains('opacity-100')) {
     // Clear existing timeout to prevent multiple calls
     if (fadeTimeout) clearTimeout(fadeTimeout);
 
@@ -7591,8 +7603,8 @@ window.getIFrameClientSize = () => {
       // Add hidden class after fade-out
       setTimeout(() => {
         element.classList.add('hidden');
-      }, 300); // Match the duration of the opacity transition
-    }, 2000); // Show duration
+      }, 300);
+    }, 2000);
   }
 }
 
@@ -7644,6 +7656,7 @@ window.importJSON = (obj, callback = null) => {
     project['components'] = obj.components;
     collectComponents(project.html);
   }
+  data.layerMap = createLayerMap(project.html);
   App.initialRender = null;
   collectSelectedIDs(project.html);
   App.render('#app');
@@ -9090,7 +9103,6 @@ window.diffNodes = (oldNode, newNode) => {
 document.addEventListener('DOMContentLoaded', function() {
   window.onload = () => {
     App.render('#app');
-    getIFrameClientSize();
     // URL to the JSON file
     const jsonFileUrl = 'cssQuickCommands.json';
 
@@ -9176,5 +9188,6 @@ document.addEventListener('DOMContentLoaded', function() {
       importJSON(JSON.parse(localStorage.getItem('Polyrise')));
     }
     window.onresize = () => getIFrameClientSize();
+    getIFrameClientSize();
   };
 });

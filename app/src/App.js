@@ -52,7 +52,7 @@ let app = {
     href: 'https://michaelsboost.com/',
     src: 'imgs/author.jpg'
   },
-  version: '1.0.3',
+  version: '1.0.4',
   url: 'https://github.com/michaelsboost/Polyrise/',
   license: 'https://github.com/michaelsboost/Polyrise/blob/gh-pages/LICENSE'
 }
@@ -990,11 +990,6 @@ window.project = createProxy(p, (property, oldValue, newValue) => {
     // Split the property path into components
     const propertyParts = property.split('.');
 
-    // Check for specific property changes
-    if (propertyParts[0] === 'activePanel') {
-      getIFrameClientSize();
-    }
-
     if (!App.initialRender) {
       // List of properties that should not trigger App.render
       const noRenderProps = ['lang', 'title', 'description', 'author', 'url', 'meta'];
@@ -1003,7 +998,7 @@ window.project = createProxy(p, (property, oldValue, newValue) => {
       if (propertyParts.includes('state') && ['selected', 'collapsed'].some(part => propertyParts.includes(part))) {
         App.render('#app');
         return; // Exit the function early
-      }      
+      }
 
       // Check if the change is within project.html and is a text property
       if (propertyParts[0] === 'html' && propertyParts.includes('text')) {
@@ -1013,21 +1008,25 @@ window.project = createProxy(p, (property, oldValue, newValue) => {
         // If the changed property is in noRenderProps, only render the preview
         renderPreview();
       } else {
-        // Handle full render or specific actions
-        App.render('#app');
-
-        // Diff nodes for other changes
-        const diff = ['lang', 'libraries', 'html', 'css', 'title', 'description', 'author', 'url', 'meta', 'previewDark'];
-        if (diff.includes(propertyParts[0])) {
-          renderPreview();
-        }
-
-        if (propertyParts[0] === "dark") {
+        if (propertyParts[0] === 'activePanel') {
+          // Handle full render or specific actions
           App.render('#app');
-          document.documentElement.setAttribute('data-theme', project.dark ? 'dark' : 'light');
-          document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]').setAttribute('content', project.dark ? 'black-translucent' : 'default');
-          document.querySelector('meta[name=theme-color]').setAttribute('content', project.dark ? '#13171f' : '#ffffff');
-          document.querySelector('meta[name=msapplication-navbutton-color]').setAttribute('content', project.dark ? '#13171f' : '#ffffff');
+          getIframeClientSize();
+        } else {
+          // Handle full render or specific actions
+          App.render('#app');
+          // Diff nodes for other changes
+          const diff = ['lang', 'libraries', 'html', 'css', 'title', 'description', 'author', 'url', 'meta', 'previewDark'];
+          if (diff.includes(propertyParts[0])) {
+            renderPreview();
+          }
+  
+          if (propertyParts[0] === "dark") {
+            document.documentElement.setAttribute('data-theme', project.dark ? 'dark' : 'light');
+            document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]').setAttribute('content', project.dark ? 'black-translucent' : 'default');
+            document.querySelector('meta[name=theme-color]').setAttribute('content', project.dark ? '#13171f' : '#ffffff');
+            document.querySelector('meta[name=msapplication-navbutton-color]').setAttribute('content', project.dark ? '#13171f' : '#ffffff');
+          }
         }
       }
     }
@@ -1045,6 +1044,10 @@ window.data = createProxy(d, (property, oldValue, newValue) => {
           selectLayersByStyleRef(data.stylesTarget, project.html);
         }
       }
+    }
+    if (string === 'selectedSize') {
+      data.iframeWidth = data.selectedSize !== 'none' ? data.selectedSize.split('x')[0] : getIframeClientSize();
+      data.iframeHeight = data.selectedSize !== 'none' ? data.selectedSize.split('x')[1] : getIframeClientSize();
     }
     App.render('#app');
   }
@@ -2034,6 +2037,8 @@ function LayerTree() {
   return project.html.map(layer => renderLayer(layer)).join('');
 }
 function Inspector() {
+  let iframe = document.getElementById('iframe');
+  if (!iframe) return;
   if (data.editorNavState) return;
 
   // Helper to find common layer tags & attributes
@@ -2185,7 +2190,10 @@ function Inspector() {
   }
   
   // Functions to generate HTML sections
-  const generatePreviewSize = () => `
+  const generatePreviewSize = () => {
+    if (data.selectedSize === "none") getIframeClientSize();
+    
+    let html = `
     <div class="grid grid-cols-1 gap-1 items-center pt-2 capitalize">
       <label for="selectedSize" aria-label="resize canvas" class="m-auto">
         <select id="selectedSize" onchange="resizeCanvas(this.value)" class="${selectClass}" style="padding: .5rem; background-image: none;">
@@ -2199,14 +2207,46 @@ function Inspector() {
           `).join('')}
         </select>
       </label>
-      <button 
-        aria-label="rotate canvas"
-        name="rotate canvas" 
-        class="bg-transparent border-0 p-0 text-center w-full mr-1 ${data.selectedSize === 'none' ? 'hidden' : ''}"
-        style="color: unset;"
-        onclick="rotateCanvas()">
-        ${icons.rotate}
-      </button>
+    </div>
+
+    <div class="grid grid-cols-2 gap-1 items-center pt-2 capitalize text-center">
+      <span class="text-[.6rem] capitalize text-left">width</span>
+      <input 
+        id="iframeWidth"
+        class="w-auto rounded-md normal-case text-[.6rem]" 
+        style="height: auto; margin: 0; padding: .4rem;" 
+        type="number" 
+        min="0" 
+        step="1" 
+        value="${data.iframeWidth}"
+        oninput="
+          if (this.value && document.getElementById('iframeHeight').value) {
+            resizeCanvas(this.value + 'x' + document.getElementById('iframeHeight').value);
+          }
+        ">
+      <span class="text-[.6rem] capitalize text-left">height</span>
+      <input 
+        id="iframeHeight"
+        class="w-auto rounded-md normal-case text-[.6rem]" 
+        style="height: auto; margin: 0; padding: .4rem;" 
+        type="number" 
+        min="0" 
+        step="1" 
+        value="${data.iframeHeight}"
+        oninput="
+          if (document.getElementById('iframeWidth').value && this.value) {
+            resizeCanvas(document.getElementById('iframeWidth').value + 'x' + this.value);
+          }
+        ">
+        <span class="text-[.6rem] capitalize text-left ${data.selectedSize === 'none' ? 'hidden' : ''}">rotate</span>
+        <button 
+          aria-label="rotate canvas"
+          name="rotate canvas" 
+          class="bg-transparent border-0 p-0 px-2 text-center mr-1 ${data.selectedSize === 'none' ? 'hidden' : ''}"
+          style="color: unset;"
+          onclick="rotateCanvas()">
+          ${icons.rotate}
+        </button>
     </div>
 
     <div class="grid grid-cols-2 gap-1 items-center pt-2 capitalize">
@@ -2217,7 +2257,9 @@ function Inspector() {
         `).join('')}
       </select>
     </div>
-  `;
+  `
+    return html;
+  };
 
   const processStyles = (stylesObject, selectorPrefix, key, detect = null) => {
     let styles = '';
@@ -6608,7 +6650,6 @@ window.addBlock = html => {
   document.querySelector('dialog[open]').querySelector('header > button').onclick();
 };
 
-
 window.selectLayersByStyleRef = (style, layers) => {
   for (const layer of layers) {
     // Deselect all layers
@@ -7531,12 +7572,22 @@ window.updateVersionPart = (part, value) => {
   }
   project.version = versionParts.join('.');
 }
+window.createLayerMap = (layers, map = new Map()) => {
+  layers.forEach(layer => {
+    // Add the layer to the map
+    map.set(layer.id, layer);
+
+    // If the layer has children, recursively add them to the map
+    if (layer.children && layer.children.length > 0) {
+      createLayerMap(layer.children, map);
+    }
+  });
+
+  return map;
+}
 
 // iframe functions
-window.resizeCanvas = size => {
-  data.selectedSize = size;
-  getIFrameClientSize();
-}
+window.resizeCanvas = size => data.selectedSize = size;
 window.rotateCanvas = () => {
   const iframe = document.getElementById('previewElm').firstElementChild;
   if (iframe.style.width === '100%') return false;
@@ -7548,51 +7599,12 @@ window.rotateCanvas = () => {
   // Swap width and height
   [width, height] = [height, width];
   data.selectedSize = width+'x'+height;
-  getIFrameClientSize();
 }
-let fadeTimeout;
-window.getIFrameClientSize = () => {
-  // resize canvas
+window.getIframeClientSize = () => {
   const iframe = document.getElementById('iframe');
-  if (iframe.style.width !== '100%') {
-    // Extract current width and height
-    let width = parseInt(iframe.style.width);
-    let height = parseInt(iframe.style.height);
-  
-    // Calculate the new transform scale
-    const viewportWidth = previewElm.clientWidth;
-    const viewportHeight = previewElm.clientHeight;
-    const scale = Math.min(viewportWidth / width, viewportHeight / height);
-  
-    // Apply the new styles
-    iframe.style.width = `${width}px`;
-    iframe.style.height = `${height}px`;
-    iframe.style.transform = `scale(${scale})`;
-    iframe.style.marginTop = `-${height / 2}px`;
-    iframe.style.marginLeft = `-${width / 2}px`;
-  }
-
-  data.iframeSize = `${iframe.clientWidth}px x ${iframe.clientHeight}px`;
-  const element = document.getElementById('iframeClientSize');
-
-  if (element.classList.contains('hidden')) {
-    // Clear existing timeout to prevent multiple calls
-    if (fadeTimeout) clearTimeout(fadeTimeout);
-
-    // Remove hidden and add opacity-100 to show the element
-    element.classList.remove('hidden', 'opacity-0');
-    element.classList.add('opacity-100');
-
-    // Set a timeout to handle fade-out
-    fadeTimeout = setTimeout(() => {
-      element.classList.remove('opacity-100');
-      element.classList.add('opacity-0');
-
-      // Add hidden class after fade-out
-      setTimeout(() => {
-        element.classList.add('hidden');
-      }, 300); // Match the duration of the opacity transition
-    }, 2000); // Show duration
+  if (iframe && iframe.offsetWidth && iframe.offsetHeight) {
+    data.iframeWidth = iframe.offsetWidth.toString();
+    data.iframeHeight = iframe.offsetHeight.toString();
   }
 }
 
@@ -7644,6 +7656,7 @@ window.importJSON = (obj, callback = null) => {
     project['components'] = obj.components;
     collectComponents(project.html);
   }
+  data.layerMap = createLayerMap(project.html);
   App.initialRender = null;
   collectSelectedIDs(project.html);
   App.render('#app');
@@ -9037,7 +9050,6 @@ window.diffNodes = (oldNode, newNode) => {
   // If nodes are different types, replace the old node
   if (oldNode.nodeName !== newNode.nodeName) {
     oldNode.replaceWith(newNode.cloneNode(true));
-    // console.log('Different node names:', oldNode, newNode);
     return;
   }
 
@@ -9059,6 +9071,15 @@ window.diffNodes = (oldNode, newNode) => {
         oldNode.setAttribute(attr.name, attr.value);
       }
     });
+
+    // Handle specific case for input elements
+    if (oldNode.nodeName === 'INPUT' && newNode.nodeName === 'INPUT') {
+      const oldValue = oldNode.value;
+      const newValue = newNode.value;
+      if (oldValue !== newValue) {
+        oldNode.value = newValue;
+      }
+    }
   }
 
   const oldChildren = Array.from(oldNode.childNodes);
@@ -9089,8 +9110,6 @@ window.diffNodes = (oldNode, newNode) => {
 // Once dom has loaded init functions
 document.addEventListener('DOMContentLoaded', function() {
   window.onload = () => {
-    App.render('#app');
-    getIFrameClientSize();
     // URL to the JSON file
     const jsonFileUrl = 'cssQuickCommands.json';
 
@@ -9174,7 +9193,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (localStorage.getItem('Polyrise')) {
       importJSON(JSON.parse(localStorage.getItem('Polyrise')));
+    } else {
+      App.render('#app');
     }
-    window.onresize = () => getIFrameClientSize();
+    window.onresize = App.render('#app');
   };
 });
