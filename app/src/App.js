@@ -9340,6 +9340,9 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
       App.render('#app');
     }
-    window.onresize = App.render('#app');
+    window.onresize = () => {
+      App.render('#app');
+      getIframeClientSize();
+    }
   };
 });
