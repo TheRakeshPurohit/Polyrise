@@ -127,6 +127,44 @@ let d = {
       ],
       meta: ''
     },
+    'algolia.js': {
+      libraries: [
+        "https://cdn.jsdelivr.net/npm/algoliasearch@4.17.0/dist/algoliasearch.umd.js"
+      ],
+      meta: ''
+    },
+    'animate.css': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+      ],
+      meta: ''
+    },
+    'anime js': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"
+      ],
+      meta: ''
+    },
+    'aos': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"
+      ],
+      meta: ''
+    },
+    'apex charts js': {
+      libraries: [
+        "https://cdn.jsdelivr.net/npm/apexcharts@3.40.0/dist/apexcharts.min.css",
+        "https://cdn.jsdelivr.net/npm/apexcharts@3.40.0/dist/apexcharts.min.js"
+      ],
+      meta: ''
+    },
+    'barba.js': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/barba.js/2.9.7/barba.min.js"
+      ],
+      meta: ''
+    },
     'bootstrap 5': {
       libraries: [
         "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css",
@@ -134,9 +172,48 @@ let d = {
       ],
       meta: ''
     },
-    'bulma': {
+    'bulm css': {
       libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css"
+        "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css",
+        "https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/css/bulma-extensions.min.css",
+        "https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/js/bulma-extensions.min.js"
+      ],
+      meta: ''
+    },
+    'chakra-ui': {
+      libraries: [
+        "https://cdn.jsdelivr.net/npm/@chakra-ui/react@2.0.0/dist/chakra-ui.min.css"
+      ],
+      meta: ''
+    },
+    'chart js': {
+      libraries: [
+        "https://cdn.jsdelivr.net/npm/chart.js"
+      ],
+      meta: ''
+    },
+    'chartist': {
+      libraries: [
+        "https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css",
+        "https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"
+      ],
+      meta: ''
+    },
+    'd3': {
+      libraries: [
+        "https://d3js.org/d3.v7.min.js"
+      ],
+      meta: ''
+    },
+    'echarts': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/echarts/5.3.3/echarts.min.js"
+      ],
+      meta: ''
+    },
+    'file-saver': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"
       ],
       meta: ''
     },
@@ -147,10 +224,98 @@ let d = {
       ],
       meta: ''
     },
+    'fullpage.js': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.11/fullpage.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.11/fullpage.min.js"
+      ],
+      meta: ''
+    },
+    'granim': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/granim/2.0.0/granim.min.js"
+      ],
+      meta: ''
+    },
+    'google charts': {
+      libraries: [
+        "https://cdn.jsdelivr.net/npm/google-charts@2.0.0/dist/googleCharts.min.js"
+      ],
+      meta: ''
+    },
+    'gsap': {
+      libraries: [
+        "https://unpkg.com/gsap@3/dist/gsap.min.js"
+      ],
+      meta: ''
+    },
+    'half moon': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/Halfmoon/1.0.4/css/halfmoon.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/Halfmoon/1.0.4/js/halfmoon.min.js"
+      ],
+      meta: ''
+    },
+    'hint css': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/hint.css/3.0.0/hint.min.css"
+      ],
+      meta: ''
+    },
+    'jszip': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
+      ],
+      meta: ''
+    },
+    'leaflet': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"
+      ],
+      meta: ''
+    },
+    'locomotive-scroll': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/locomotive-scroll/4.1.4/locomotive-scroll.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/locomotive-scroll/4.1.4/locomotive-scroll.min.js"
+      ],
+      meta: ''
+    },
+    'lodash': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"
+      ],
+      meta: ''
+    },
+    'masonry js': {
+      libraries: [
+        "https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"
+      ],
+      meta: ''
+    },
     'materialize': {
       libraries: [
         "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css",
         "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"
+      ],
+      meta: ''
+    },
+    'milligram css': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css"
+      ],
+      meta: ''
+    },
+    'moment js': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"
+      ],
+      meta: ''
+    },
+    'pattern css': {
+      libraries: [
+        "https://unpkg.com/pattern.css@1.0.0/dist/pattern.min.css"
       ],
       meta: ''
     },
@@ -161,16 +326,90 @@ let d = {
       ],
       meta: ''
     },
-    'semantic': {
+    'primer css': {
+      libraries: [
+        "https://unpkg.com/@primer/css@^20.2.4/dist/primer.css"
+      ],
+      meta: ''
+    },
+    'popper js': {
+      libraries: [
+        "https://unpkg.com/@popperjs/core@2.11.7/dist/umd/popper.min.js"
+      ],
+      meta: ''
+    },
+    'pure.css': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/pure/2.0.6/pure-min.css"
+      ],
+      meta: ''
+    },
+    'raisin css': {
+      libraries: [
+        "https://cdn.jsdelivr.net/gh/tretapey/raisincss@1.1.1/raisin.min.css"
+      ],
+      meta: ''
+    },
+    'raphael js': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"
+      ],
+      meta: ''
+    },
+    'semantic ui': {
       libraries: [
         "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.2/semantic.min.css",
         "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.2/semantic.min.js"
       ],
       meta: ''
     },
-    'tailwind': {
+    'skeleton css': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css"
+      ],
+      meta: ''
+    },
+    'spectre.css': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/spectre.css/0.5.9/spectre.min.css"
+      ],
+      meta: ''
+    },
+    'stimulus': {
+      libraries: [
+        "https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3.1.0/dist/stimulus.umd.js",
+        "https://cdn.jsdelivr.net/npm/@hotwired/stimulus-loading@1.0.0/dist/stimulus-loading.umd.js"
+      ],
+      meta: ''
+    },
+    'swiper': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/Swiper/9.1.2/swiper-bundle.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/Swiper/9.1.2/swiper-bundle.min.js"
+      ],
+      meta: ''
+    },
+    'tachyons': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/tachyons/4.12.0/tachyons.min.css"
+      ],
+      meta: ''
+    },
+    'tailwind css': {
       libraries: [
         "https://michaelsboost.com/TailwindCSSMod/tailwind-mod-noreset.min.js"
+      ],
+      meta: ''
+    },
+    'three.js': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/three.js/r148/three.min.js"
+      ],
+      meta: ''
+    },
+    'tippy js': {
+      libraries: [
+        "https://cdnjs.cloudflare.com/ajax/libs/tippy.js/6.3.7/tippy-bundle.umd.min.js"
       ],
       meta: ''
     },
@@ -182,110 +421,15 @@ let d = {
       ],
       meta: ''
     },
-    'pure.css': {
+    'vivus': {
       libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/pure/2.0.6/pure-min.css"
-      ],
-      meta: ''
-    },
-    'skeleton': {
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css"
-      ],
-      meta: ''
-    },
-    'bulma-extensions': {
-      libraries: [
-        "https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/css/bulma-extensions.min.css",
-        "https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/js/bulma-extensions.min.js"
-      ],
-      meta: ''
-    },
-    'tachyons': {
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/tachyons/4.12.0/tachyons.min.css"
+        "https://cdnjs.cloudflare.com/ajax/libs/vivus/0.4.6/vivus.min.js"
       ],
       meta: ''
     },
     'water.css': {
       libraries: [
         "https://cdnjs.cloudflare.com/ajax/libs/water.css/2.1.1/water.min.css"
-      ],
-      meta: ''
-    },
-    'spectre.css': {
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/spectre.css/0.5.9/spectre.min.css"
-      ],
-      meta: ''
-    },
-    'milligram': {
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css"
-      ],
-      meta: ''
-    },
-    'chakra-ui': {
-      libraries: [
-        "https://cdn.jsdelivr.net/npm/@chakra-ui/react@2.0.0/dist/chakra-ui.min.css"
-      ],
-      meta: ''
-    },
-    'gsap': {
-      libraries: [
-        "https://unpkg.com/gsap@3/dist/gsap.min.js"
-      ],
-      meta: ''
-    },
-    'animate.css': {
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-      ],
-      meta: ''
-    },
-    'locomotive-scroll': {
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/locomotive-scroll/4.1.4/locomotive-scroll.min.css",
-        "https://cdnjs.cloudflare.com/ajax/libs/locomotive-scroll/4.1.4/locomotive-scroll.min.js"
-      ],
-      meta: ''
-    },
-    'fullpage.js': {
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.11/fullpage.min.css",
-        "https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.11/fullpage.min.js"
-      ],
-      meta: ''
-    },
-    'aos': {
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css",
-        "https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"
-      ],
-      meta: ''
-    },
-    'swiper': {
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/Swiper/9.1.2/swiper-bundle.min.css",
-        "https://cdnjs.cloudflare.com/ajax/libs/Swiper/9.1.2/swiper-bundle.min.js"
-      ],
-      meta: ''
-    },
-    'barba.js': {
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/barba.js/2.9.7/barba.min.js"
-      ],
-      meta: ''
-    },
-    'three.js': {
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/three.js/r148/three.min.js"
-      ],
-      meta: ''
-    },
-    'vivus': {
-      libraries: [
-        "https://cdnjs.cloudflare.com/ajax/libs/vivus/0.4.6/vivus.min.js"
       ],
       meta: ''
     }
