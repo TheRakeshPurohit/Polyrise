@@ -3670,7 +3670,7 @@ window.Blocks = () => {
   
     <section class="select-none font-thin" style="padding: var(--pico-block-spacing-vertical) var(--pico-block-spacing-horizontal); margin: var(--pico-spacing);">
       <div class="p-0 m-0">
-        <details class="flex items-center mb-0" ${data.blocks.visible ? 'open' : ''} ontoggle="
+        <details class="block mb-0" ${data.blocks.visible ? 'open' : ''} ontoggle="
           const detailsElement = this;
           data.blocks.visible = detailsElement.hasAttribute('open');
         ">
@@ -3694,7 +3694,7 @@ window.Blocks = () => {
     
     <section class="select-none font-thin" style="padding: var(--pico-block-spacing-vertical) var(--pico-block-spacing-horizontal); margin: var(--pico-spacing);">
       <div class="p-0 m-0">
-        <details class="flex items-center mb-0" ${data.componentsVisible ? 'open' : ''} ontoggle="
+        <details class="block mb-0" ${data.componentsVisible ? 'open' : ''} ontoggle="
           const detailsElement = this;
           data.blocks.visible = detailsElement.hasAttribute('open');
         ">
@@ -7669,7 +7669,7 @@ window.commandPalette = () => {
             <label for="emuqfdoxq" class="select-none">Replace current selection</label>
           </div>
           <hr/>
-          <details class="flex items-center mb-0" ${data.commandsOpen ? 'open' : ''} ontoggle="
+          <details class="block mb-0" ${data.commandsOpen ? 'open' : ''} ontoggle="
             const detailsElement = this;
             data.commandsOpen = detailsElement.hasAttribute('open');
           ">
