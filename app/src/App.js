@@ -2057,7 +2057,7 @@ window.attributesModal = () => {
             const detailsElement = this;
             data.specificAttributesForTag = detailsElement.hasAttribute('open');
           ">
-            <summary>
+            <summary class="block">
               Specific Attributes for &lt;${layer.tag}&gt;
             </summary>
             <code class="grid grid-cols-2 gap-2 mb-0 bg-transparent">
@@ -2074,7 +2074,7 @@ window.attributesModal = () => {
           const detailsElement = this;
           data.globalAttributesCollapsed = detailsElement.hasAttribute('open');
         ">
-          <summary>
+          <summary class="block">
             Global Attributes
           </summary>
           <code class="grid grid-cols-2 gap-2 mb-0 bg-transparent">
@@ -2091,7 +2091,7 @@ window.attributesModal = () => {
           const detailsElement = this;
           data.eventAttributesCollapsed = detailsElement.hasAttribute('open');
         ">
-          <summary>
+          <summary class="block">
             Event Attributes for &lt;${layer.tag}&gt;
           </summary>
           <code class="grid grid-cols-2 gap-2 mb-0 bg-transparent">
@@ -3674,7 +3674,7 @@ window.Blocks = () => {
           const detailsElement = this;
           data.blocks.visible = detailsElement.hasAttribute('open');
         ">
-          <summary>
+          <summary class="block">
             ${data.blocks.name}
           </summary>
           <code class="grid grid-cols-2 gap-2 mb-0 bg-transparent">
@@ -3698,7 +3698,7 @@ window.Blocks = () => {
           const detailsElement = this;
           data.blocks.visible = detailsElement.hasAttribute('open');
         ">
-        <summary>
+        <summary class="block">
           Components
         </summary>
         <code class="grid grid-cols-2 gap-2 mb-0 bg-transparent">
@@ -7673,7 +7673,7 @@ window.commandPalette = () => {
             const detailsElement = this;
             data.commandsOpen = detailsElement.hasAttribute('open');
           ">
-          <summary>
+          <summary class="block">
             Commands
           </summary>
           <code class="grid grid-cols-2 gap-2 mb-0 bg-transparent">
@@ -7685,7 +7685,7 @@ window.commandPalette = () => {
             const detailsElement = this;
             data.commandPaletteGuide = detailsElement.hasAttribute('open');
           ">
-          <summary>
+          <summary class="block">
             How to use the Command Palette:
           </summary>
           ${guide}
